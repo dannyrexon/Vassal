@@ -104,7 +104,7 @@ function create(){
 
     }
 
-document.getElementById("tileinfo").innerHTML = info
+   document.getElementById("tileinfo").innerHTML = info
    drawSelection()
 
   }

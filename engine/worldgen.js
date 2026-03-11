@@ -36,11 +36,11 @@ function generate(settings){
 
    const r=Math.random()
 
-   if(r<0.30) map[cy][cx].terrain=5
-   else if(r<0.70) map[cy][cx].terrain=6
-   else if(r<0.90) map[cy][cx].terrain=7
-   else if(r<0.97) map[cy][cx].terrain=8
-   else map[cy][cx].terrain=9
+   if(r<0.30) map[cy][cx].terrain=5           // Plain
+   else if(r<0.80) map[cy][cx].terrain=6      // Grassland
+   else if(r<0.90) map[cy][cx].terrain=7      // Wetland
+   else if(r<0.97) map[cy][cx].terrain=8      // Hill
+   else map[cy][cx].terrain=9                 // Mountain
 
   }
 
@@ -61,14 +61,18 @@ function generateCoasts(map){
   if(map[y][x].terrain===0){
 
  const n=[
+  map[y-1]?.[x-1]?.terrain,
   map[y-1]?.[x]?.terrain,
-  map[y+1]?.[x]?.terrain,
+  map[y-1]?.[x+1]?.terrain,
   map[y]?.[x-1]?.terrain,
-  map[y]?.[x+1]?.terrain
+  map[y]?.[x+1]?.terrain,
+  map[y+1]?.[x-1]?.terrain,
+  map[y+1]?.[x]?.terrain,
+  map[y+1]?.[x+1]?.terrain
  ]
 
 
- if(n.some(v=>v>=2)){
+ if(n.some(v=>v>=3)){
   const r=Math.random()
   if(r<0.95) map[y][x].terrain=1
   else map[y][x].terrain=2    

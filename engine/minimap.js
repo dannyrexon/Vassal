@@ -104,6 +104,11 @@ function draw(map){
 
  ctx.fillStyle = COLORS[tile]
 
+ if(map[y][x].vegetation > 10 && map[y][x].vegetation < 14){
+  ctx.fillStyle = "#265b13"
+ }
+ 
+
  ctx.fillRect(x*scale,y*scale,scale,scale)
 
  }
