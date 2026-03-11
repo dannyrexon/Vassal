@@ -114,12 +114,12 @@ function update(){
 
 function generateWorld(){
 
- map=worldgen.generate(SETTINGS)
+ GameState.map = worldgen.generate(SETTINGS)
 
- renderer.render(map)
+ renderer.render(GameState.map)
 
  minimap.setup()
- minimap.draw(map)
+ minimap.draw(GameState.map)
 
 }
 
