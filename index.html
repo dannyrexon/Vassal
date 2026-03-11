@@ -57,6 +57,27 @@ body{
 </style>
 </head>
 
+<script>
+let lastCheck = Date.now();
+
+setInterval(async () => {
+  try {
+    const res = await fetch("index.html?cache=" + Date.now());
+    const text = await res.text();
+
+    const version = text.length; 
+
+    if(window.__lastVersion && window.__lastVersion !== version){
+        location.reload();
+    }
+
+    window.__lastVersion = version;
+
+  } catch(e) {}
+
+}, 5000);
+</script>
+
 <body>
 
 <div id="game-container"></div>
