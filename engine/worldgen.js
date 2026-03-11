@@ -1,97 +1,71 @@
-// Enhanced world generator with noise-based terrain, biomes, and hooks for rivers/coasts
-// Requires: engine/simplex.js (SimplexNoise)
+function createWorldGen(MAP_WIDTH,MAP_HEIGHT){
 
-function createWorldGen(MAP_WIDTH, MAP_HEIGHT) {
-    // Import SimplexNoise
-    let SimplexNoise;
-    if (typeof require !== 'undefined') {
-        SimplexNoise = require('./simplex');
-    } else {
-        SimplexNoise = window.SimplexNoise;
-    }
+function generate(settings){
 
-    function generate(settings) {
-        const map = [];
-        const noise = new SimplexNoise(settings.seed || 0);
-        // Parameters for noise scaling
-        const scale = settings.noise_scale || 0.05;
-        // Biome thresholds
-        const thresholds = {
-            deep_water: -0.3,
-            shallow_water: 0.0,
-            sand: 0.08,
-            grass: 0.25,
-            forest: 0.45,
-            mountain: 0.65,
-            snow: 0.8
-        };
+ let map=[]
 
-        for (let y = 0; y < MAP_HEIGHT; y++) {
-            map[y] = [];
-            for (let x = 0; x < MAP_WIDTH; x++) {
-                // Generate base height
-                const nx = x * scale, ny = y * scale;
-                const h = noise.noise(nx, ny);
-                // Assign terrain type based on height
-                let tile = 0;
-                if (h < thresholds.deep_water) tile = 0; // Deep water
-                else if (h < thresholds.shallow_water) tile = 1; // Shallow water
-                else if (h < thresholds.sand) tile = 2; // Sand
-                else if (h < thresholds.grass) tile = 3; // Grass
-                else if (h < thresholds.forest) tile = 4; // Forest
-                else if (h < thresholds.mountain) tile = 5; // Mountain
-                else tile = 6; // Snow
-                map[y][x] = tile;
-            }
-        }
+ for(let y=0;y<MAP_HEIGHT;y++){
 
-        // Optionally add rivers (placeholder)
-        if (settings.rivers) {
-            generateRivers(map, settings.rivers);
-        }
+  map[y]=[]
 
-        // Smooth coasts
-        generateCoasts(map);
+  for(let x=0;x<MAP_WIDTH;x++) map[y][x]=0
 
-        return map;
-    }
+ }
 
-    // Coast smoothing: mark sand tiles next to water
-    function generateCoasts(map) {
-        for (let y = 0; y < MAP_HEIGHT; y++) {
-            for (let x = 0; x < MAP_WIDTH; x++) {
-                if (map[y][x] === 2) { // sand
-                    const n = [
-                        map[y-1]?.[x],
-                        map[y+1]?.[x],
-                        map[y]?.[x-1],
-                        map[y]?.[x+1]
-                    ];
-                    if (n.some(v => v === 0 || v === 1)) {
-                        map[y][x] = 2; // keep as sand
-                    } else if (n.some(v => v === 3)) {
-                        map[y][x] = 3; // blend to grass
-                    }
-                }
-            }
-        }
-    }
+ for(let c=0;c<settings.continents;c++){
 
-    // Placeholder for river generation
-    function generateRivers(map, count) {
-        // Simple river: random walk from top to bottom
-        for (let r = 0; r < count; r++) {
-            let x = Math.floor(Math.random() * MAP_WIDTH);
-            let y = 0;
-            for (; y < MAP_HEIGHT; y++) {
-                if (map[y][x] > 1) map[y][x] = 1; // river (shallow water)
-                // Randomly meander
-                x += Math.floor(Math.random() * 3) - 1;
-                if (x < 0) x = 0;
-                if (x >= MAP_WIDTH) x = MAP_WIDTH - 1;
-            }
-        }
-    }
+  let cx=Math.floor(Math.random()*MAP_WIDTH)
+  let cy=Math.floor(Math.random()*MAP_HEIGHT)
 
-    return { generate };
+  let size=settings.continent_size_min+
+           Math.random()*(settings.continent_size_max-settings.continent_size_min)
+
+  for(let i=0;i<size;i++){
+
+   cx+=Math.floor(Math.random()*3)-1
+   cy+=Math.floor(Math.random()*3)-1
+
+   if(cx<0||cy<0||cx>=MAP_WIDTH||cy>=MAP_HEIGHT) continue
+
+   const r=Math.random()
+
+   if(r<0.55) map[cy][cx]=2
+   else if(r<0.8) map[cy][cx]=3
+   else if(r<0.95) map[cy][cx]=4
+   else map[cy][cx]=5
+
+  }
+
+ }
+
+ generateCoasts(map)
+
+ return map
+
+}
+
+function generateCoasts(map){
+
+ for(let y=0;y<MAP_HEIGHT;y++)
+ for(let x=0;x<MAP_WIDTH;x++){
+
+  if(map[y][x]===0){
+
+   const n=[
+    map[y-1]?.[x],
+    map[y+1]?.[x],
+    map[y]?.[x-1],
+    map[y]?.[x+1]
+   ]
+
+   if(n.some(v=>v>=2)) map[y][x]=1
+
+  }
+
+ }
+
+}
+
+return{generate}
+
 }
