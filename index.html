@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Colonization Clone v7.0</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:#202020;
+  font-family:Arial;
+  color:white;
+  overflow:hidden;
+}
+
+#game-container{
+  position:absolute;
+  left:16px;
+  top:16px;
+  bottom:16px;
+  right:300px;
+}
+
+#game-container canvas{
+  cursor:pointer;
+}
+
+#sidepanel{
+  position:absolute;
+  right:0;
+  top:0;
+  bottom:0;
+  width:270px;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+}
+
+#minimap{
+  border:1px solid #555;
+  margin-bottom:16px;
+  image-rendering:pixelated;
+  cursor:pointer;
+}
+
+#regen{
+  margin-top:auto;
+  padding:8px;
+  background:#444;
+  border:none;
+  color:white;
+  cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="game-container"></div>
+
+<div id="sidepanel">
+<canvas id="minimap"></canvas>
+
+<div id="tileinfo">Click a tile</div>
+
+<button id="regen">Regenerate World</button>
+</div>
+
+<script src="engine/worldgen.js"></script>
+<script src="engine/renderer.js"></script>
+<script src="engine/minimap.js"></script>
+<script src="engine/camera.js"></script>
+<script src="engine/input.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
