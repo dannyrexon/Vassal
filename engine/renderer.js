@@ -14,7 +14,7 @@ function render(map){
    x*TILE_SIZE,
    y*TILE_SIZE,
    "terrain",
-   map[y][x]
+   map[y][x].terrain
   )
 
   img.setOrigin(0,0)

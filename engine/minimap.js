@@ -98,7 +98,7 @@ function draw(map){
  for(let y=0;y<MAP_HEIGHT;y++)
  for(let x=0;x<MAP_WIDTH;x++){
 
- const tile = map[y][x]
+ const tile = map[y][x].terrain
 
  ctx.fillStyle = COLORS[tile]
 

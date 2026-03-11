@@ -8,8 +8,15 @@ function generate(settings){
 
   map[y]=[]
 
-  for(let x=0;x<MAP_WIDTH;x++) map[y][x]=0
-
+  for(let x=0;x<MAP_WIDTH;x++){
+    map[y][x] = {
+    terrain: 0,
+    vegetation: 0,
+    resource: 0,
+    river: false,
+    road: false
+    }
+  }
  }
 
  for(let c=0;c<settings.continents;c++){
@@ -29,10 +36,10 @@ function generate(settings){
 
    const r=Math.random()
 
-   if(r<0.55) map[cy][cx]=2
-   else if(r<0.8) map[cy][cx]=3
-   else if(r<0.95) map[cy][cx]=4
-   else map[cy][cx]=5
+   if(r<0.55) map[cy][cx].terrain=2
+   else if(r<0.8) map[cy][cx].terrain=3
+   else if(r<0.95) map[cy][cx].terrain=4
+   else map[cy][cx].terrain=5
 
   }
 
@@ -49,18 +56,18 @@ function generateCoasts(map){
  for(let y=0;y<MAP_HEIGHT;y++)
  for(let x=0;x<MAP_WIDTH;x++){
 
-  if(map[y][x]===0){
+  if(map[y][x].terrain===0){
 
-   const n=[
-    map[y-1]?.[x],
-    map[y+1]?.[x],
-    map[y]?.[x-1],
-    map[y]?.[x+1]
-   ]
+ const n=[
+  map[y-1]?.[x]?.terrain,
+  map[y+1]?.[x]?.terrain,
+  map[y]?.[x-1]?.terrain,
+  map[y]?.[x+1]?.terrain
+ ]
 
-   if(n.some(v=>v>=2)) map[y][x]=1
-
-  }
+ if(n.some(v=>v>=2))
+  map[y][x].terrain=1
+ }
 
  }
 

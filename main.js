@@ -88,7 +88,7 @@ function create(){
 
    selectedTile={x,y}
 
-   const terrain=GameState.map[y][x]
+   const terrain=GameState.map[y][x].terrain
    const terrainName=TERRAIN_NAMES[terrain] || terrain
 
    document.getElementById("tileinfo").innerHTML =
