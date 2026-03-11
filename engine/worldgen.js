@@ -36,10 +36,11 @@ function generate(settings){
 
    const r=Math.random()
 
-   if(r<0.55) map[cy][cx].terrain=2
-   else if(r<0.8) map[cy][cx].terrain=3
-   else if(r<0.95) map[cy][cx].terrain=4
-   else map[cy][cx].terrain=5
+   if(r<0.30) map[cy][cx].terrain=5
+   else if(r<0.70) map[cy][cx].terrain=6
+   else if(r<0.90) map[cy][cx].terrain=7
+   else if(r<0.97) map[cy][cx].terrain=8
+   else map[cy][cx].terrain=9
 
   }
 
@@ -65,8 +66,12 @@ function generateCoasts(map){
   map[y]?.[x+1]?.terrain
  ]
 
- if(n.some(v=>v>=2))
-  map[y][x].terrain=1
+
+ if(n.some(v=>v>=2)){
+  const r=Math.random()
+  if(r<0.95) map[y][x].terrain=1
+  else map[y][x].terrain=2    
+  }
  }
 
  }

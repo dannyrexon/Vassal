@@ -1,14 +1,19 @@
 {
-  "0": "Ocean",
-  "1": "Shore",
-  "2": "Plain",
-  "3": "Grassland",
-  "4": "Hill",
-  "5": "Mountain",
-  "6": "Marsh",
-  "7": "Meadow",
-  "8": "Brush",
-  "9": "Broadleaf Forest",
-  "10": "Pine Forest",
-  "11": "Wooded Hills"
+ "0": "Sea",
+ "1": "Coast",
+ "2": "Archipelago",
+
+ "5": "Plain",
+ "6": "Grassland",
+ "7": "Wetland",
+ "8": "Hill",
+ "9": "Mountain",
+
+ "10": "Meadow",
+ "11": "Brush",
+ "12": "Broadleaf Forest",
+ "13": "Conifer Forest",
+ "14": "Woods",
+
+ "15": "Bog"
 }

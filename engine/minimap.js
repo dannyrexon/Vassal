@@ -13,10 +13,12 @@ let currentMap=null
 const COLORS={
  0:"#2b6cff",
  1:"#4ea6ff",
- 2:"#4fbf4f",
- 3:"#6fe36f",
- 4:"#888888",
- 5:"#bbbbbb"
+ 2:"#4ea6ff",
+ 5:"#ceb94d",
+ 6:"#6fe36f",
+ 7:"#5bb175",
+ 8:"#90a066",
+ 9:"#dedfdb",
 }
 
 function setup(){

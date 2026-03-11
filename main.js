@@ -19,7 +19,6 @@ const TILE_SIZE=SETTINGS.tile_size
 const MAP_WIDTH=SETTINGS.map_width
 const MAP_HEIGHT=SETTINGS.map_height
 
-let map=[]
 let camera
 let pointer
 let selectedTile=null
@@ -89,7 +88,7 @@ function create(){
    selectedTile={x,y}
 
    const terrain=GameState.map[y][x].terrain
-   const terrainName=TERRAIN_NAMES[terrain] || terrain
+   const terrainName=TERRAIN_NAMES?.[terrain] ?? "Undefined"
 
    document.getElementById("tileinfo").innerHTML =
    "Map: ["+x+", "+y+"]"+
