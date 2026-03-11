@@ -98,9 +98,11 @@ function draw(map){
  for(let y=0;y<MAP_HEIGHT;y++)
  for(let x=0;x<MAP_WIDTH;x++){
 
-  ctx.fillStyle=COLORS[map[y][x]]
+ const tile = map[y][x]
 
-  ctx.fillRect(x*scale,y*scale,scale,scale)
+ ctx.fillStyle = COLORS[tile]
+
+ ctx.fillRect(x*scale,y*scale,scale,scale)
 
  }
 

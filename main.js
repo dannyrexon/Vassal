@@ -88,7 +88,7 @@ function create(){
 
    selectedTile={x,y}
 
-   const terrain=map[y][x]
+   const terrain=GameState.map[y][x]
    const terrainName=TERRAIN_NAMES[terrain] || terrain
 
    document.getElementById("tileinfo").innerHTML =
@@ -108,7 +108,7 @@ function update(){
  if(!mouseInsideMap) return
 
  inputSystem.update()
- minimap.draw(map)
+ minimap.draw(GameState.map)
 
 }
 
