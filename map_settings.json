@@ -1,6 +1,6 @@
 {
   "tile_size": 64,
-  "map_width": 20,
+  "map_width": 60,
   "map_height": 40,
   "continents": 8,
   "continent_size_min": 1500,
