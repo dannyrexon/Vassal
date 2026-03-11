@@ -9,19 +9,34 @@ function render(map){
 
  for(let y=0;y<MAP_HEIGHT;y++)
  for(let x=0;x<MAP_WIDTH;x++){
+const tile = map[y][x]
 
-  const img=scene.add.image(
-   x*TILE_SIZE,
-   y*TILE_SIZE,
-   "terrain",
-   map[y][x]?.terrain ?? 0
-  )
+const terrainSprite = scene.add.image(
+ x*TILE_SIZE,
+ y*TILE_SIZE,
+ "terrain",
+ tile.terrain
+)
 
-  img.setOrigin(0,0)
+terrainSprite.setOrigin(0,0)
 
-  sprites.push(img)
+sprites.push(terrainSprite)
 
- }
+if(tile.vegetation > 0){
+
+ const vegSprite = scene.add.image(
+  x*TILE_SIZE,
+  y*TILE_SIZE,
+  "terrain",
+  tile.vegetation
+ )
+
+ vegSprite.setOrigin(0,0)
+
+ sprites.push(vegSprite)
+}   
+
+}
 
 }
 

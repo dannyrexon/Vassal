@@ -87,13 +87,24 @@ function create(){
 
    selectedTile={x,y}
 
-   const terrain=GameState.map[y][x].terrain
-   const terrainName=TERRAIN_NAMES?.[terrain] ?? "Undefined"
+   const tile = GameState.map[y][x]
 
-   document.getElementById("tileinfo").innerHTML =
-   "Map: ["+x+", "+y+"]"+
-   "<br>Terrain: "+terrainName
+    const terrain = tile.terrain
+    const terrainName = TERRAIN_NAMES?.[terrain] ?? "Undefined"
 
+   let info =
+    "Map: ["+x+", "+y+"]"+
+    "<br>Terrain: "+terrainName
+
+    if(tile.vegetation > 0){
+
+    const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
+
+    info += " (" + vegName + ")"
+
+    }
+
+document.getElementById("tileinfo").innerHTML = info
    drawSelection()
 
   }

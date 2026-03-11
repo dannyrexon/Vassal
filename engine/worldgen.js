@@ -47,7 +47,8 @@ function generate(settings){
  }
 
  generateCoasts(map)
-
+ generateVegetation(map)
+ 
  return map
 
 }
@@ -73,6 +74,35 @@ function generateCoasts(map){
   else map[y][x].terrain=2    
   }
  }
+
+ }
+}
+
+function generateVegetation(map){
+
+ for(let y=0;y<MAP_HEIGHT;y++)
+ for(let x=0;x<MAP_WIDTH;x++){
+
+  const tile = map[y][x]
+  const t = tile.terrain
+
+  let options = []
+
+  if(t===5 || t===6 || t===7)
+   options = [10,11,12,13]
+
+  else if(t===8)
+   options = [14]
+
+  if(options.length===0) continue
+
+  if(Math.random() < 0.5){
+
+   tile.vegetation = options[
+    Math.floor(Math.random()*options.length)
+   ]
+
+  }
 
  }
 
