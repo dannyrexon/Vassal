@@ -75,23 +75,66 @@ if(tile.terrain === 1)
     if(isCoast(s,0)) drawTransition(15)
 }
 
+// Rivers
 
+if(map[y][x].river){
+
+ const n = map[y-1]?.[x]?.river
+ const e = map[y]?.[x+1]?.river
+ const s = map[y+1]?.[x]?.river
+ const w = map[y]?.[x-1]?.river
+
+ let frame = -1
+
+ // special coast mouth rule
+ if(map[y][x].terrain === 1){
+
+  if(w) frame = 15
+  else if(e) frame = 16
+  else if(n) frame = 17
+  else if(s) frame = 18
+
+ } else {
+
+  frame = getRiverFrame(n,e,s,w)
+
+ }
+
+ if(frame >= 0){
+
+  const img = scene.add.image(
+   x*TILE_SIZE,
+   y*TILE_SIZE,
+   "rivers",
+   frame
+  )
+
+  img.setOrigin(0,0)
+
+  sprites.push(img)
+
+ }
+
+}
 
 // Vegetation
 
-if(tile.vegetation > 0){
+if(showVegetation && tile.vegetation){
 
- const vegSprite = scene.add.image(
+ const img = scene.add.image(
   x*TILE_SIZE,
   y*TILE_SIZE,
   "terrain",
   tile.vegetation
  )
 
- vegSprite.setOrigin(0,0)
+ img.setOrigin(0,0)
 
- sprites.push(vegSprite)
-}   
+ sprites.push(img)
+
+}
+
+
 
 }
 }
@@ -102,4 +145,28 @@ return{render}
 
 function isCoast(t, i){
  return t===i
+}
+
+function getRiverFrame(n,e,s,w){
+
+ if(w && s && e && n) return 14
+ if(w && s && e) return 13
+ if(w && s && n) return 12
+ if(w && s) return 11
+ if(w && e && n) return 10
+ if(w && e) return 9
+ if(w && n) return 8
+ if(w) return 7
+
+ if(s && e && n) return 6
+ if(s && e) return 5
+ if(s && n) return 4
+ 
+ if(s) return 3
+
+ if(n && e) return 2
+ if(e) return 1
+ if(n) return 0
+
+ return -1
 }

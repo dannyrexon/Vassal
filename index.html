@@ -45,13 +45,20 @@ body{
   cursor:pointer;
 }
 
-#regen{
+.debug{
   margin-top:auto;
   padding:8px;
   background:#444;
   border:none;
   color:white;
   cursor:pointer;
+}
+
+#debugButtons{
+ margin-top:auto;
+ display:flex;
+ flex-direction:column;
+ gap:8px;
 }
 
 </style>
@@ -66,7 +73,10 @@ body{
 
 <div id="tileinfo"></div>
 
-<button id="regen">Regenerate World</button>
+<div id="debugButtons">
+  <button class="debug" id="toggleVeg">Hide Vegetation</button>
+  <button class="debug" id="regen">Regenerate World</button>
+</div>
 </div>
 
 <script src="engine/state.js"></script>

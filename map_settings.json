@@ -6,5 +6,6 @@
   "continent_size_min": 1500,
   "continent_size_max": 2500,
   "scroll_speed": 36,
-  "scroll_edge": 40
+  "scroll_edge": 40,
+  "rivers": 20
 }

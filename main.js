@@ -1,5 +1,6 @@
 let SETTINGS=null
 let TERRAIN_NAMES=null
+let showVegetation = true
 
 async function loadSettings(){
 
@@ -59,6 +60,11 @@ function preload(){
   frameHeight:64
  })
 
+  this.load.spritesheet("rivers","graphics/rivers.png?v="+v,{
+  frameWidth:64,
+  frameHeight:64
+ })
+
 }
 
 function create(){
@@ -82,6 +88,20 @@ function create(){
 
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
+
+ document.getElementById("toggleVeg").onclick = () => {
+
+ showVegetation = !showVegetation
+
+ const btn = document.getElementById("toggleVeg")
+
+ btn.innerText = showVegetation
+ ? "Hide Vegetation"
+ : "Show Vegetation"
+
+ renderer.render(GameState.map)
+
+}
 
  document.getElementById("regen").onclick=generateWorld
 
