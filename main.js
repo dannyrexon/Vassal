@@ -34,14 +34,15 @@ let minimap
 let cameraSystem
 let inputSystem
 
-const config={
- type:Phaser.AUTO,
- width:window.innerWidth-320,
- height:window.innerHeight-32,
- parent:"game-container",
- pixelArt:true,
- roundPixels:true,
- scene:{preload,create,update}
+const config = {
+ type: Phaser.AUTO,
+ width: window.innerWidth - 320,
+ height: window.innerHeight - 32,
+ parent: "game-container",
+ pixelArt: true,
+ roundPixels: true,
+ scale: { mode: Phaser.Scale.NONE },
+ scene: { preload, create, update }
 }
 
 const game=new Phaser.Game(config)
@@ -130,6 +131,8 @@ function create(){
     info += " (" + vegName + ")"
 
     }
+
+    if(tile.river) { info += "<br>River" }
 
    document.getElementById("tileinfo").innerHTML = info
    drawSelection()
