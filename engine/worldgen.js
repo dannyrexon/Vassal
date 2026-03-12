@@ -73,9 +73,7 @@ function generateCoasts(map){
 
 
  if(n.some(v=>v>=3)){
-  const r=Math.random()
-  if(r<0.95) map[y][x].terrain=1
-  else map[y][x].terrain=2    
+  map[y][x].terrain=1    
   }
  }
 

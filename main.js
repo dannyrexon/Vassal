@@ -47,7 +47,14 @@ const game=new Phaser.Game(config)
 
 function preload(){
 
- this.load.spritesheet("terrain","graphics/terrain.png",{
+ const v = Date.now()
+
+ this.load.spritesheet("terrain","graphics/terrain.png?v="+v,{
+  frameWidth:64,
+  frameHeight:64
+ })
+
+ this.load.spritesheet("transitions","graphics/transitions.png?v="+v,{
   frameWidth:64,
   frameHeight:64
  })
