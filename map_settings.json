@@ -5,7 +5,7 @@
   "continents": 8,
   "continent_size_min": 1500,
   "continent_size_max": 2500,
-  "scroll_speed": 36,
+  "scroll_speed": 20,
   "scroll_edge": 40,
   "rivers": 30
 }

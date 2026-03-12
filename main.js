@@ -1,5 +1,6 @@
 let SETTINGS=null
 let TERRAIN_NAMES=null
+let POPULATION_NAMES = null
 let showVegetation = true
 
 async function loadSettings(){
@@ -10,6 +11,9 @@ async function loadSettings(){
  const terrainReq=await fetch("terrain_names.json")
  TERRAIN_NAMES=await terrainReq.json()
 
+ const popReq = await fetch("population_names.json")
+ POPULATION_NAMES = await popReq.json()
+
  startGame()
 
 }
@@ -19,6 +23,7 @@ function startGame(){
 const TILE_SIZE=SETTINGS.tile_size
 const MAP_WIDTH=SETTINGS.map_width
 const MAP_HEIGHT=SETTINGS.map_height
+
 
 let camera
 let pointer
@@ -33,6 +38,8 @@ let renderer
 let minimap
 let cameraSystem
 let inputSystem
+
+let population
 
 const config = {
  type: Phaser.AUTO,
@@ -51,20 +58,49 @@ function preload(){
 
  const v = Date.now()
 
- this.load.spritesheet("terrain","graphics/terrain.png?v="+v,{
-  frameWidth:64,
-  frameHeight:64
- })
+    this.load.spritesheet("terrain","graphics/terrain.png?v="+v, { frameWidth:64, frameHeight:64 })
+    this.load.spritesheet("transitions","graphics/transitions.png?v="+v, { frameWidth:64, frameHeight:64 })
+    this.load.spritesheet("rivers","graphics/rivers.png?v="+v, { frameWidth:64, frameHeight:64 })
+    this.load.spritesheet("population","graphics/population.png?v="+v, { frameWidth:64, frameHeight:64 })
 
- this.load.spritesheet("transitions","graphics/transitions.png?v="+v,{
-  frameWidth:64,
-  frameHeight:64
- })
+}
 
-  this.load.spritesheet("rivers","graphics/rivers.png?v="+v,{
-  frameWidth:64,
-  frameHeight:64
- })
+function onUnitMoved(unit){
+
+ selectedTile = {x:unit.x, y:unit.y}
+
+ //drawSelection()
+
+ const textDiv = document.getElementById("tiletext")
+ const icon = document.getElementById("unitIcon")
+
+ const tile = GameState.map[unit.y][unit.x]
+
+ const terrainName = TERRAIN_NAMES?.[tile.terrain] ?? "Undefined"
+
+ let info =
+  "Map: ["+unit.x+", "+unit.y+"]"+
+  "<br>Terrain: "+terrainName
+
+ if(tile.vegetation > 0){
+  const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
+  info += " (" + vegName + ")"
+ }
+
+ if(tile.river) info += "<br>River"
+
+ const unitName = POPULATION_NAMES?.[unit.type] ?? "Unknown"
+
+ info +=
+ "<br><br>"+unitName+
+ " ("+unit.moveCurrent+" of "+unit.moveTotal+" Moves)"
+
+ textDiv.innerHTML = info
+
+ icon.src = "graphics/population.png"
+ icon.style.display = "block"
+ icon.style.objectFit = "none"
+ icon.style.objectPosition = "-" + (unit.type*64) + "px 0px"
 
 }
 
@@ -72,24 +108,52 @@ function create(){
 
  sceneRef=this
 
+ let terrainLayer
+ let vegetationLayer
+ let riverLayer
+ let unitLayer
+ let uiLayer
+
+ terrainLayer = this.add.layer()
+ vegetationLayer = this.add.layer()
+ riverLayer = this.add.layer()
+ unitLayer = this.add.layer()
+ uiLayer = this.add.layer()
+
+ unitLayer.setDepth(100)
+
  camera=this.cameras.main
  pointer=this.input.activePointer
 
  worldgen=createWorldGen(MAP_WIDTH,MAP_HEIGHT)
- renderer=createRenderer(sceneRef,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT)
+ renderer=createRenderer(
+ sceneRef,
+ TILE_SIZE,
+ MAP_WIDTH,
+ MAP_HEIGHT,
+ terrainLayer,
+ vegetationLayer,
+ riverLayer,
+ )
  minimap=createMinimap(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
  cameraSystem=createCamera(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
- inputSystem=createInput(pointer,game,SETTINGS,camera)
-
+ population = createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,onUnitCycle)
+ inputSystem=createInput(sceneRef,pointer,SETTINGS,camera,population,MAP_WIDTH,MAP_HEIGHT,onUnitMoved)
+ 
  generateWorld()
 
  cameraSystem.setBounds()
-
+ 
  const canvas=this.sys.game.canvas
 
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
+ // Starting population
+ population.createUnit(6, 6, 0, 3) // x, y, type, moves
+ population.createUnit(7, 8, 0, 3) // x, y, type, moves
+ population.createUnit(12, 10, 0, 3) // x, y, type, moves
+ 
  document.getElementById("toggleVeg").onclick = () => {
 
  showVegetation = !showVegetation
@@ -101,7 +165,7 @@ function create(){
  : "Show Vegetation"
 
  renderer.render(GameState.map)
-
+ 
 }
 
  document.getElementById("regen").onclick=generateWorld
@@ -115,27 +179,68 @@ function create(){
 
    selectedTile={x,y}
 
+   const unit = population.getUnitAt(x,y)
+
    const tile = GameState.map[y][x]
 
     const terrain = tile.terrain
     const terrainName = TERRAIN_NAMES?.[terrain] ?? "Undefined"
 
    let info =
-    "Map: ["+x+", "+y+"]"+
-    "<br>Terrain: "+terrainName
+    "["+x+", "+y+"]"+
+    "<br>"+terrainName
 
-    if(tile.vegetation > 0){
-
-    const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
-
-    info += " (" + vegName + ")"
-
+    if(tile.vegetation > 0)
+    {
+        const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
+        info += " (" + vegName + ")"
     }
 
     if(tile.river) { info += "<br>River" }
 
-   document.getElementById("tileinfo").innerHTML = info
-   drawSelection()
+   const textDiv = document.getElementById("tiletext")
+   const icon = document.getElementById("unitIcon")
+
+   textDiv.innerHTML = info
+   icon.style.display = "none"
+   icon.style.objectFit = "none"
+   
+   //drawSelection()
+   
+    if(unit){
+    population.setActive(unit)
+    sceneRef.tweens.add({
+
+ targets: camera,
+
+ scrollX: unit.x*TILE_SIZE - camera.width/2 + TILE_SIZE/2,
+ scrollY: unit.y*TILE_SIZE - camera.height/2 + TILE_SIZE/2,
+
+ duration: 250,
+ ease: "Sine.easeOut"
+
+})
+    } else {
+    population.setActive(null)
+    }
+
+    if(unit){
+
+    const unitName = POPULATION_NAMES?.[unit.type] ?? "Unknown"
+
+    textDiv.innerHTML +=
+    "<br><br>" + unitName +
+    " (" + unit.moveCurrent + " of " + unit.moveTotal + " Moves)"
+
+    icon.src = "graphics/population.png"
+    icon.style.display = "block"
+    icon.style.objectPosition = "-" + (unit.type*64) + "px 0px"
+
+}
+
+//   const targetX = x * TILE_SIZE + TILE_SIZE / 2
+//   const targetY = y * TILE_SIZE + TILE_SIZE / 2
+//   camera.centerOn(targetX, targetY)
 
   }
 
@@ -145,10 +250,12 @@ function create(){
 
 function update(){
 
- if(!mouseInsideMap) return
-
+ if(mouseInsideMap){
  inputSystem.update()
+ }
+
  minimap.draw(GameState.map)
+ population.update(this.time.now)
 
 }
 
@@ -163,6 +270,30 @@ function generateWorld(){
 
 }
 
+function onUnitCycle(unit){
+
+ if(!unit) return
+
+ selectedTile = {x:unit.x, y:unit.y}
+
+ //drawSelection()
+
+ sceneRef.tweens.add({
+
+ targets: camera,
+
+ scrollX: unit.x*TILE_SIZE - camera.width/2 + TILE_SIZE/2,
+ scrollY: unit.y*TILE_SIZE - camera.height/2 + TILE_SIZE/2,
+
+ duration: 250,
+ ease: "Sine.easeOut"
+
+})
+
+ onUnitMoved(unit)
+
+}
+
 function drawSelection(){
 
  if(selectionGraphic) selectionGraphic.destroy()
@@ -171,7 +302,7 @@ function drawSelection(){
 
  selectionGraphic=sceneRef.add.graphics()
 
- selectionGraphic.lineStyle(3,0xffff00,1)
+ selectionGraphic.lineStyle(2,0xffff00,1)
 
  selectionGraphic.strokeRect(
   selectedTile.x*TILE_SIZE,
@@ -181,6 +312,8 @@ function drawSelection(){
  )
 
 }
+
+
 
 }
 

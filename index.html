@@ -66,6 +66,10 @@ canvas{
  gap:8px;
 }
 
+#tileinfo{
+  font-size:14px;
+}
+
 </style>
 </head>
 
@@ -76,7 +80,10 @@ canvas{
 <div id="sidepanel">
 <canvas id="minimap"></canvas>
 
-<div id="tileinfo"></div>
+<div id="tileinfo">
+    <img id="unitIcon" style="display:none; width:64px; height:64px;float:left; margin-right:8px;">
+    <div id="tiletext"></div>
+</div>
 
 <div id="debugButtons">
   <button class="debug" id="toggleVeg">Hide Vegetation</button>
@@ -90,6 +97,7 @@ canvas{
 <script src="engine/minimap.js"></script>
 <script src="engine/camera.js"></script>
 <script src="engine/input.js"></script>
+<script src="engine/population.js"></script>
 <script src="main.js"></script>
 
 </body>

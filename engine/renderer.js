@@ -1,8 +1,12 @@
-function createRenderer(scene,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT){
+function createRenderer(scene,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT,terrainLayer,vegetationLayer,riverLayer){
 
 let sprites=[]
 
 function render(map){
+
+ terrainLayer.removeAll(true)
+ vegetationLayer.removeAll(true)
+ riverLayer.removeAll(true)
 
  sprites.forEach(s=>s.destroy())
  sprites=[]
@@ -11,12 +15,12 @@ function render(map){
  for(let x=0;x<MAP_WIDTH;x++){
 const tile = map[y][x]
 
-const terrainSprite = scene.add.image(
+const terrainSprite = terrainLayer.add(scene.add.image(
  x*TILE_SIZE,
  y*TILE_SIZE,
  "terrain",
  tile.terrain
-)
+))
 
 terrainSprite.setOrigin(0,0)
 
@@ -36,12 +40,12 @@ const se = map[y+1]?.[x+1]?.terrain
 
 function drawTransition(frame){
 
- const t = scene.add.image(
+ const t = terrainLayer.add(scene.add.image(
   x*TILE_SIZE,
   y*TILE_SIZE,
   "transitions",
   frame
- )
+ ))
 
  t.setOrigin(0,0)
 
@@ -102,12 +106,12 @@ if(map[y][x].river){
 
  if(frame >= 0){
 
-  const img = scene.add.image(
+  const img = riverLayer.add(scene.add.image(
    x*TILE_SIZE,
    y*TILE_SIZE,
    "rivers",
    frame
-  )
+  ))
 
   img.setOrigin(0,0)
 
@@ -121,12 +125,12 @@ if(map[y][x].river){
 
 if(showVegetation && tile.vegetation){
 
- const img = scene.add.image(
+ const img = vegetationLayer.add(scene.add.image(
   x*TILE_SIZE,
   y*TILE_SIZE,
   "terrain",
   tile.vegetation
- )
+ ))
 
  img.setOrigin(0,0)
 
