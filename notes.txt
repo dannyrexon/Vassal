@@ -1,0 +1,27 @@
+
+ Fighting Units:	TYPE	ATT		DEF		REQ
+ ------------------------------------------------------------------------
+
+ Any unarmed pop	Inf	0		1		-
+ 
+ Armed peasant		Inf	1		1 (+1 vs CAV)	Peasant + Weapons
+ Peasant Bowman		Arc	1 (+1 vs CAV)	1  		Peasant + Weapons
+ 
+ Soldier (unarmed)	Inf	1		1		Soldier
+ Spearman		Inf	1		2 (+1 vs CAV)	Soldier + Weapons
+ Crossbowman		Arc	2 (+1 vs INF)	1		Soldier + Weapons
+ Swordsman		Inf	2		2		Soldier + Weapons
+ Knight			Cav	4 (+1 vs ARC)	2		Soldier + Weapons + Horses
+ 
+ Mercenary		Inf	2		2		Bought for gold *
+
+ Bandit			Inf	1		2		-
+ Raider			Inf	2		1		-
+
+
+
+
+
+
+
+ * Cannot enter cities or work, only for military use

@@ -1,4 +1,6 @@
 {
  "0": "Peasant",
- "1": "Other"
+ "1": "Burgher",
+ "2": "Cleric",
+ "3": "Noble"
 }

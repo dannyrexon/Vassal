@@ -30,6 +30,26 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle,checkEn
   return unit
  }
 
+function getNextUnitAfter(unit){
+
+ const index = units.indexOf(unit)
+
+ for(let i=index+1;i<units.length;i++){
+  if(units[i].moveCurrent > 0){
+   return units[i]
+  }
+ }
+
+ for(let i=0;i<index;i++){
+  if(units[i].moveCurrent > 0){
+   return units[i]
+  }
+ }
+
+ return null
+
+}
+
  function getUnitAt(x,y){
 
   for(const u of units){
@@ -141,8 +161,14 @@ function update(time){
  blinkState = !blinkState
 
  if(activeUnit){
+
+ if(activeUnit.isMoving){
+  activeUnit.sprite.visible = true
+ } else {
   activeUnit.sprite.visible = blinkState
  }
+
+}
 
 }
 
@@ -153,6 +179,7 @@ function update(time){
  setActive,
  getActiveUnit,
  getNextUnitWithMoves,
+ getNextUnitAfter,
  update,
  units
 }
