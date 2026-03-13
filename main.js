@@ -199,7 +199,7 @@ function create(){
 
  population.createUnit(6,6,0,3,1)  // x,y,type,moves,vision
  population.createUnit(7,8,1,3,1)
- population.createUnit(12,10,2,3,2)
+ population.createUnit(12,10,2,3,1)
  population.createUnit(15,8,3,3,1)
 
  for(const unit of population.units){

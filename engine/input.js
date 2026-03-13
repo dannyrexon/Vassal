@@ -46,7 +46,7 @@ function getNextUnitAfter(unit){
 
 
 // SKIP TURN (SPACE)
-scene.input.keyboard.on("keydown-SPACE", ()=>{
+scene.input.keyboard.on("keydown-S", ()=>{
 
  const unit = population.getActiveUnit()
 
