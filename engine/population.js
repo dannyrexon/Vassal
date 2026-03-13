@@ -1,6 +1,7 @@
-function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle){
+function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle,checkEndTurn){
 
  let units = []
+ let activeUnit = null
 
  function createUnit(x,y,type,move){
 
@@ -20,7 +21,8 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle){
    moveTotal: move,
    moveCurrent: move,
    active: false,
-   sprite
+   sprite,
+   isMoving: false
   }
 
   units.push(unit)
@@ -40,8 +42,12 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle){
 
  function moveUnit(unit,x,y){
 
+ if(unit.isMoving) return
+
  unit.x = x
  unit.y = y
+
+ unit.isMoving = true
 
  // ensure visible during movement
  unit.sprite.visible = true
@@ -58,22 +64,29 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle){
 
   onComplete: () => {
 
- if(unit.moveCurrent <= 0){
+   unit.isMoving = false
 
-  const next = getNextUnitWithMoves()
+   if(unit.moveCurrent <= 0){
 
-  if(next){
-   setActive(next)
-  } else {
-   setActive(null)
-  }
+    const next = getNextUnitWithMoves()
 
-  if(onUnitCycle){
-   onUnitCycle(next)
-  }
+    if(next){
+     setActive(next)
+    } else {
+     setActive(null)
+    }
 
-  return
- }
+    if(onUnitCycle){
+      setTimeout(()=>{
+      onUnitCycle(next)
+      },300)
+    }   
+
+    checkEndTurn()    
+
+    return
+   }
+
    // otherwise restore blinking
    if(wasActive){
     unit.active = true
@@ -87,24 +100,23 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle){
 
  function setActive(unit){
 
- for(const u of units){
-  u.active = false
-  u.sprite.visible = true
+ // deactivate previous
+ if(activeUnit){
+  activeUnit.active = false
+  activeUnit.sprite.visible = true
  }
 
- if(unit) { unit.active = true }
+ activeUnit = unit
 
+ if(activeUnit){
+  activeUnit.active = true
  }
+
+}
 
  function getActiveUnit(){
-
- for(const u of units){
-  if(u.active) return u
- }
-
- return null
-
- }
+ return activeUnit
+}
 
  function getNextUnitWithMoves(){
 
@@ -128,15 +140,11 @@ function update(time){
  blinkTimer = time
  blinkState = !blinkState
 
- for(const u of units){
-
-  if(u.active){
-   u.sprite.visible = blinkState
-  }
-
+ if(activeUnit){
+  activeUnit.sprite.visible = blinkState
  }
 
- }
+}
 
  return{
  createUnit,

@@ -24,6 +24,7 @@ const TILE_SIZE=SETTINGS.tile_size
 const MAP_WIDTH=SETTINGS.map_width
 const MAP_HEIGHT=SETTINGS.map_height
 
+let currentTurn = 1
 
 let camera
 let pointer
@@ -58,49 +59,76 @@ function preload(){
 
  const v = Date.now()
 
-    this.load.spritesheet("terrain","graphics/terrain.png?v="+v, { frameWidth:64, frameHeight:64 })
-    this.load.spritesheet("transitions","graphics/transitions.png?v="+v, { frameWidth:64, frameHeight:64 })
-    this.load.spritesheet("rivers","graphics/rivers.png?v="+v, { frameWidth:64, frameHeight:64 })
-    this.load.spritesheet("population","graphics/population.png?v="+v, { frameWidth:64, frameHeight:64 })
+ this.load.spritesheet("terrain","graphics/terrain.png?v="+v,{ frameWidth:64, frameHeight:64 })
+ this.load.spritesheet("transitions","graphics/transitions.png?v="+v,{ frameWidth:64, frameHeight:64 })
+ this.load.spritesheet("rivers","graphics/rivers.png?v="+v,{ frameWidth:64, frameHeight:64 })
+ this.load.spritesheet("population","graphics/population.png?v="+v,{ frameWidth:64, frameHeight:64 })
+
+}
+
+function startTurn(){
+
+ currentTurn++
+
+ for(const u of population.units){
+  u.moveCurrent = u.moveTotal
+ }
+
+ const firstUnit = population.units[0]
+
+ if(firstUnit){
+  activateUnit(firstUnit)
+ }
+
+ updateTurnInfo()
+
+}
+
+function checkEndTurn(){
+
+ for(const u of population.units){
+  if(u.moveCurrent > 0){
+   return
+  }
+ }
+
+ setTimeout(()=>{
+  startTurn()
+ },500)
 
 }
 
 function onUnitMoved(unit){
 
  selectedTile = {x:unit.x, y:unit.y}
-
  //drawSelection()
+ updateInfoPanel(unit.x,unit.y)
 
- const textDiv = document.getElementById("tiletext")
- const icon = document.getElementById("unitIcon")
+}
 
- const tile = GameState.map[unit.y][unit.x]
+function activateUnit(unit){
 
- const terrainName = TERRAIN_NAMES?.[tile.terrain] ?? "Undefined"
+ if(!unit) return
 
- let info =
-  "Map: ["+unit.x+", "+unit.y+"]"+
-  "<br>Terrain: "+terrainName
+ population.setActive(unit)
 
- if(tile.vegetation > 0){
-  const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
-  info += " (" + vegName + ")"
- }
+ selectedTile = {x:unit.x, y:unit.y}
 
- if(tile.river) info += "<br>River"
+ updateInfoPanel(unit.x,unit.y)
 
- const unitName = POPULATION_NAMES?.[unit.type] ?? "Unknown"
+ sceneRef.tweens.killTweensOf(camera)
 
- info +=
- "<br><br>"+unitName+
- " ("+unit.moveCurrent+" of "+unit.moveTotal+" Moves)"
+ sceneRef.tweens.add({
 
- textDiv.innerHTML = info
+  targets: camera,
 
- icon.src = "graphics/population.png"
- icon.style.display = "block"
- icon.style.objectFit = "none"
- icon.style.objectPosition = "-" + (unit.type*64) + "px 0px"
+  scrollX: unit.x*TILE_SIZE - camera.width/2 + TILE_SIZE/2,
+  scrollY: unit.y*TILE_SIZE - camera.height/2 + TILE_SIZE/2,
+
+  duration:250,
+  ease:"Sine.easeOut"
+
+ })
 
 }
 
@@ -126,47 +154,69 @@ function create(){
  pointer=this.input.activePointer
 
  worldgen=createWorldGen(MAP_WIDTH,MAP_HEIGHT)
+
  renderer=createRenderer(
- sceneRef,
- TILE_SIZE,
- MAP_WIDTH,
- MAP_HEIGHT,
- terrainLayer,
- vegetationLayer,
- riverLayer,
+  sceneRef,
+  TILE_SIZE,
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  terrainLayer,
+  vegetationLayer,
+  riverLayer
  )
+
  minimap=createMinimap(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
  cameraSystem=createCamera(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
- population = createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,onUnitCycle)
- inputSystem=createInput(sceneRef,pointer,SETTINGS,camera,population,MAP_WIDTH,MAP_HEIGHT,onUnitMoved)
- 
+
+ population = createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,onUnitCycle,checkEndTurn)
+
+ inputSystem=createInput(
+  sceneRef,
+  pointer,
+  SETTINGS,
+  camera,
+  population,
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  onUnitMoved,
+  checkEndTurn
+ )
+
  generateWorld()
 
  cameraSystem.setBounds()
- 
+
  const canvas=this.sys.game.canvas
 
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
  // Starting population
- population.createUnit(6, 6, 0, 3) // x, y, type, moves
- population.createUnit(7, 8, 0, 3) // x, y, type, moves
- population.createUnit(12, 10, 0, 3) // x, y, type, moves
+ population.createUnit(6,6,0,3)
+ population.createUnit(7,8,0,3)
+ population.createUnit(12,10,0,3)
  
+ const firstUnit = population.units[0]
+
+ if(firstUnit){
+  activateUnit(firstUnit)
+ }
+
+ updateTurnInfo()
+
  document.getElementById("toggleVeg").onclick = () => {
 
- showVegetation = !showVegetation
+  showVegetation=!showVegetation
 
- const btn = document.getElementById("toggleVeg")
+  const btn=document.getElementById("toggleVeg")
 
- btn.innerText = showVegetation
- ? "Hide Vegetation"
- : "Show Vegetation"
+  btn.innerText = showVegetation
+  ? "Hide Vegetation"
+  : "Show Vegetation"
 
- renderer.render(GameState.map)
- 
-}
+  renderer.render(GameState.map)
+
+ }
 
  document.getElementById("regen").onclick=generateWorld
 
@@ -181,66 +231,18 @@ function create(){
 
    const unit = population.getUnitAt(x,y)
 
-   const tile = GameState.map[y][x]
+   if(unit){
 
-    const terrain = tile.terrain
-    const terrainName = TERRAIN_NAMES?.[terrain] ?? "Undefined"
+    activateUnit(unit)
 
-   let info =
-    "["+x+", "+y+"]"+
-    "<br>"+terrainName
-
-    if(tile.vegetation > 0)
-    {
-        const vegName = TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
-        info += " (" + vegName + ")"
-    }
-
-    if(tile.river) { info += "<br>River" }
-
-   const textDiv = document.getElementById("tiletext")
-   const icon = document.getElementById("unitIcon")
-
-   textDiv.innerHTML = info
-   icon.style.display = "none"
-   icon.style.objectFit = "none"
-   
-   //drawSelection()
-   
-    if(unit){
-    population.setActive(unit)
-    sceneRef.tweens.add({
-
- targets: camera,
-
- scrollX: unit.x*TILE_SIZE - camera.width/2 + TILE_SIZE/2,
- scrollY: unit.y*TILE_SIZE - camera.height/2 + TILE_SIZE/2,
-
- duration: 250,
- ease: "Sine.easeOut"
-
-})
-    } else {
+   }
+   else{
     population.setActive(null)
-    }
+   }
 
-    if(unit){
+   updateInfoPanel(x,y)
 
-    const unitName = POPULATION_NAMES?.[unit.type] ?? "Unknown"
-
-    textDiv.innerHTML +=
-    "<br><br>" + unitName +
-    " (" + unit.moveCurrent + " of " + unit.moveTotal + " Moves)"
-
-    icon.src = "graphics/population.png"
-    icon.style.display = "block"
-    icon.style.objectPosition = "-" + (unit.type*64) + "px 0px"
-
-}
-
-//   const targetX = x * TILE_SIZE + TILE_SIZE / 2
-//   const targetY = y * TILE_SIZE + TILE_SIZE / 2
-//   camera.centerOn(targetX, targetY)
+   //drawSelection()
 
   }
 
@@ -251,7 +253,7 @@ function create(){
 function update(){
 
  if(mouseInsideMap){
- inputSystem.update()
+  inputSystem.update()
  }
 
  minimap.draw(GameState.map)
@@ -272,25 +274,76 @@ function generateWorld(){
 
 function onUnitCycle(unit){
 
- if(!unit) return
-
- selectedTile = {x:unit.x, y:unit.y}
-
+ activateUnit(unit)
  //drawSelection()
 
- sceneRef.tweens.add({
+}
 
- targets: camera,
+function updateInfoPanel(x,y){
 
- scrollX: unit.x*TILE_SIZE - camera.width/2 + TILE_SIZE/2,
- scrollY: unit.y*TILE_SIZE - camera.height/2 + TILE_SIZE/2,
+ const textDiv=document.getElementById("tiletext")
+ const icon=document.getElementById("unitIcon")
 
- duration: 250,
- ease: "Sine.easeOut"
+ const tile = GameState.map[y][x]
+ const unit = population.getUnitAt(x,y)
 
-})
+ const terrainName = TERRAIN_NAMES?.[tile.terrain] ?? "Undefined"
 
- onUnitMoved(unit)
+ let info =
+  "Turn: "+currentTurn+
+  "<br>Map: ["+x+", "+y+"]"+
+  "<br>Terrain: "+terrainName
+
+ if(tile.vegetation>0){
+
+  const vegName=TERRAIN_NAMES?.[tile.vegetation] ?? "Undefined"
+
+  info+=" ("+vegName+")"
+
+ }
+
+ if(tile.river) info+="<br>River"
+
+ icon.style.display="none"
+ icon.style.objectFit="none"
+
+ if(unit){
+
+  const unitName=POPULATION_NAMES?.[unit.type] ?? "Unknown"
+
+  info+="<br><br>"+unitName+
+  " ("+formatMoves(unit.moveCurrent)+" of "+formatMoves(unit.moveTotal)+" Moves)"
+
+  icon.src="graphics/population.png"
+  icon.style.display="block"
+  icon.style.objectPosition="-"+(unit.type*64)+"px 0px"
+
+ }
+
+ textDiv.innerHTML=info
+
+}
+
+function formatMoves(moves){
+
+ const whole=Math.floor(moves/3)
+ const rem=moves%3
+
+ if(rem===0) return whole.toString()
+
+ const frac=rem+"/3"
+
+ if(whole===0) return frac
+
+ return whole+" "+frac
+
+}
+
+function updateTurnInfo(){
+
+ if(selectedTile){
+  updateInfoPanel(selectedTile.x,selectedTile.y)
+ }
 
 }
 
@@ -312,8 +365,6 @@ function drawSelection(){
  )
 
 }
-
-
 
 }
 

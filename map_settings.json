@@ -7,5 +7,15 @@
   "continent_size_max": 2500,
   "scroll_speed": 20,
   "scroll_edge": 40,
-  "rivers": 30
+  "rivers": 30,
+
+  "movement_cost": {
+    "0": 99,
+    "1": 99,
+    "5": 3,
+    "6": 3,
+    "7": 3,
+    "8": 3,
+    "9": 3
+  }
 }

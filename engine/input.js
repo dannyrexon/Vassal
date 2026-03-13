@@ -1,9 +1,36 @@
-function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,onUnitMoved){
+function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,onUnitMoved,checkEndTurn){
+
+function getMoveCost(unit,nx,ny){
+
+ const fromTile = GameState.map[unit.y][unit.x]
+ const toTile   = GameState.map[ny][nx]
+
+ const terrainCost = settings.movement_cost?.[toTile.terrain] ?? 1
+
+ if(terrainCost >= 99) return 99
+
+ let cost = terrainCost
+
+ const dx = nx - unit.x
+ const dy = ny - unit.y
+
+ const isCardinalMove = (dx === 0 || dy === 0)
+
+ // river movement bonus (only N,E,S,W)
+ if(fromTile.river && toTile.river && isCardinalMove){
+  cost = 1
+ }
+
+ return cost
+
+}
+
 
 scene.input.keyboard.on("keydown",(e)=>{
 
  const unit = population.getActiveUnit()
 
+ if(unit.isMoving) return
  if(!unit) return
  if(unit.moveCurrent <= 0) return
 
@@ -31,13 +58,20 @@ scene.input.keyboard.on("keydown",(e)=>{
 
  if(nx < 0 || ny < 0 || nx >= MAP_WIDTH || ny >= MAP_HEIGHT) return
 
+ const cost = getMoveCost(unit,nx,ny)
+
+ if(cost > unit.moveCurrent) return
+ if(cost >= 99) return
+
  population.moveUnit(unit,nx,ny)
 
- unit.moveCurrent -= 1
+ unit.moveCurrent -= cost
 
  if(onUnitMoved){
   onUnitMoved(unit)
  }
+
+ checkEndTurn()
 
 })
 
