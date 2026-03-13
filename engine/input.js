@@ -151,18 +151,28 @@ scene.input.keyboard.on("keydown",(e)=>{
 
 function update(){
 
- const speed=settings.scroll_speed
- const edge=settings.scroll_edge
+if(!pointer.isDown && !pointer.primaryDown){
+ if(!scene.input.mousePointer.withinGame) return
+}
+
+ const speed = settings.scroll_speed
+ const edge  = settings.scroll_edge
 
  const w = scene.scale.width
  const h = scene.scale.height
 
- if(pointer.x<edge) camera.scrollX-=speed
- if(pointer.x>w-edge) camera.scrollX+=speed
- if(pointer.y<edge) camera.scrollY-=speed
- if(pointer.y>h-edge) camera.scrollY+=speed
+ const px = pointer.position.x
+ const py = pointer.position.y
+
+ if(px < edge)       camera.scrollX -= speed
+ if(px > w - edge)   camera.scrollX += speed
+ if(py < edge)       camera.scrollY -= speed
+ if(py > h - edge)   camera.scrollY += speed
+
+ 
 
 }
+
 
 return{update}
 

@@ -62,8 +62,8 @@ function preload(){
  this.load.spritesheet("transitions","graphics/transitions.png?v="+v,{frameWidth:64,frameHeight:64})
  this.load.spritesheet("rivers","graphics/rivers.png?v="+v,{frameWidth:64,frameHeight:64})
  this.load.spritesheet("population","graphics/population.png?v="+v,{frameWidth:64,frameHeight:64})
+ this.load.image("hidden","graphics/hidden.png?v="+v)
 }
-
 
 function startTurn(){
 
@@ -88,7 +88,6 @@ function startTurn(){
  },200)
 }
 
-
 function endTurn(){
 
  if(turnState!=="PLAYER") return
@@ -99,7 +98,6 @@ function endTurn(){
   startTurn()
  },500)
 }
-
 
 function checkEndTurn(){
 
@@ -112,13 +110,15 @@ function checkEndTurn(){
  endTurn()
 }
 
-
 function onUnitMoved(unit){
 
  selectedTile={x:unit.x,y:unit.y}
- updateInfoPanel(unit.x,unit.y)
-}
+ explore(unit)
 
+ renderer.render(GameState.map)
+ updateInfoPanel(unit.x,unit.y)
+ 
+}
 
 function activateUnit(unit){
 
@@ -141,7 +141,6 @@ function activateUnit(unit){
  })
 }
 
-
 function create(){
 
  sceneRef=this
@@ -151,6 +150,7 @@ function create(){
  let riverLayer=this.add.layer()
  let unitLayer=this.add.layer()
  let uiLayer=this.add.layer()
+ let fogLayer = this.add.layer()
 
  unitLayer.setDepth(100)
 
@@ -166,13 +166,15 @@ function create(){
   MAP_HEIGHT,
   terrainLayer,
   vegetationLayer,
-  riverLayer
+  riverLayer,
+  fogLayer
  )
 
  minimap=createMinimap(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
  cameraSystem=createCamera(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
 
- population=createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,onUnitCycle,checkEndTurn)
+ population=createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,
+    onUnitCycle,checkEndTurn,onUnitMoved)
 
  inputSystem=createInput(
   sceneRef,
@@ -195,10 +197,15 @@ function create(){
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
- population.createUnit(6,6,0,3)
- population.createUnit(7,8,1,3)
- population.createUnit(12,10,2,3)
- population.createUnit(15,8,3,3)
+ population.createUnit(6,6,0,3,1)  // x,y,type,moves,vision
+ population.createUnit(7,8,1,3,1)
+ population.createUnit(12,10,2,3,2)
+ population.createUnit(15,8,3,3,1)
+
+ for(const unit of population.units){
+ explore(unit)
+ }
+ renderer.render(GameState.map)
 
  const firstUnit=population.units[0]
 
@@ -236,7 +243,6 @@ function create(){
  })
 }
 
-
 function update(){
 
  if(mouseInsideMap){
@@ -247,15 +253,44 @@ function update(){
  population.update(this.time.now)
 }
 
-
 function generateWorld(){
 
  GameState.map=worldgen.generate(SETTINGS)
 
- renderer.render(GameState.map)
-
  minimap.setup()
  minimap.draw(GameState.map)
+
+ for(const unit of population.units){
+ explore(unit)
+ }
+
+ renderer.render(GameState.map)
+
+}
+
+function explore(unit){
+
+ const tile = GameState.map[unit.y][unit.x]
+
+ let radius = unit.vision
+
+ // hill bonus
+ if(tile.terrain === 8){
+  radius += 1
+ }
+
+ for(let dy=-radius; dy<=radius; dy++)
+ for(let dx=-radius; dx<=radius; dx++){
+
+  const x = unit.x + dx
+  const y = unit.y + dy
+
+  if(!GameState.map[y]?.[x]) continue
+
+  GameState.map[y][x].explored = true
+
+ }
+
 }
 
 
@@ -263,7 +298,6 @@ function onUnitCycle(unit){
 
  activateUnit(unit)
 }
-
 
 function updateInfoPanel(x,y){
 
@@ -302,11 +336,14 @@ function updateInfoPanel(x,y){
   icon.style.display="block"
   icon.style.objectFit="none"
   icon.style.objectPosition="-"+(unit.type*64)+"px 0px"
+  icon.onclick = () => {
+   activateUnit(unit)
+  }
+
  }
 
  textDiv.innerHTML=info
 }
-
 
 function formatMoves(moves){
 
@@ -322,14 +359,12 @@ function formatMoves(moves){
  return whole+" "+frac
 }
 
-
 function updateTurnInfo(){
 
  if(selectedTile){
   updateInfoPanel(selectedTile.x,selectedTile.y)
  }
 }
-
 
 function drawSelection(){
 

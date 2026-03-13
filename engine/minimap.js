@@ -107,6 +107,7 @@ function draw(map){
  if(map[y][x].vegetation > 10 && map[y][x].vegetation < 14){
   ctx.fillStyle = "#265b13"
  }
+ if(!map[y][x].explored){ ctx.fillStyle = "#000000" }
  
 
  ctx.fillRect(x*scale,y*scale,scale,scale)

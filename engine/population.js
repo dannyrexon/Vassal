@@ -1,9 +1,10 @@
-function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle,checkEndTurn){
+function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle, checkEndTurn, onUnitMoved)
+{
 
  let units = []
  let activeUnit = null
 
- function createUnit(x,y,type,move){
+ function createUnit(x,y,type,move,vision){
 
   const sprite = scene.add.sprite(
     x*TILE_SIZE + TILE_SIZE/2,
@@ -22,13 +23,16 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle,checkEn
    moveCurrent: move,
    active: false,
    sprite,
-   isMoving: false
+   isMoving: false,
+   vision
   }
 
   units.push(unit)
 
   return unit
  }
+
+ 
 
 function getNextUnitAfter(unit){
 
@@ -64,9 +68,9 @@ function getNextUnitAfter(unit){
 
  if(unit.isMoving) return
 
- unit.x = x
- unit.y = y
-
+ const targetX = x
+ const targetY = y
+ 
  unit.isMoving = true
 
  // ensure visible during movement
@@ -83,8 +87,15 @@ function getNextUnitAfter(unit){
   ease: "Linear",
 
   onComplete: () => {
-
+   
    unit.isMoving = false
+
+   unit.x = targetX
+   unit.y = targetY
+   
+   if(onUnitMoved){
+    onUnitMoved(unit)
+   }
 
    if(unit.moveCurrent <= 0){
 

@@ -1,10 +1,12 @@
-function createRenderer(scene,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT,terrainLayer,vegetationLayer,riverLayer){
+function createRenderer(scene,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT,terrainLayer,
+    vegetationLayer,riverLayer,fogLayer){
 
 function render(map){
 
  terrainLayer.removeAll(true)
  vegetationLayer.removeAll(true)
  riverLayer.removeAll(true)
+ fogLayer.removeAll(true)
 
  for(let y=0;y<MAP_HEIGHT;y++)
  for(let x=0;x<MAP_WIDTH;x++){
@@ -128,6 +130,22 @@ function render(map){
   img.setOrigin(0,0)
 
  }
+
+
+ // Unexplored Terrain
+
+if(!tile.explored){
+
+ const fog = scene.add.image(
+  x*TILE_SIZE - 8,
+  y*TILE_SIZE - 8,
+  "hidden"
+ )
+
+ fog.setOrigin(0,0)
+ fogLayer.add(fog)
+
+}
 
  }
 
