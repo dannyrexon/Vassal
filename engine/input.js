@@ -1,4 +1,5 @@
-function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,onUnitMoved,checkEndTurn){
+function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,
+    onUnitMoved,checkEndTurn,activateUnit){
 
 function getMoveCost(unit,nx,ny){
 
@@ -62,7 +63,7 @@ scene.input.keyboard.on("keydown-S", ()=>{
   population.setActive(next)
 
   setTimeout(()=>{
-   onUnitMoved(next)
+   activateUnit(next)
   },300)
 
  }
@@ -91,7 +92,7 @@ scene.input.keyboard.on("keydown-W", ()=>{
  population.setActive(next)
 
  setTimeout(()=>{
-  onUnitMoved(next)
+  activateUnit(next)
  },300)
 
 })
@@ -151,12 +152,8 @@ scene.input.keyboard.on("keydown",(e)=>{
 
 function update(){
 
-if(!pointer.isDown && !pointer.primaryDown){
- if(!scene.input.mousePointer.withinGame) return
-}
-
- const speed = settings.scroll_speed
- const edge  = settings.scroll_edge
+ const edge = settings.scroll_edge
+ const maxSpeed = settings.scroll_speed
 
  const w = scene.scale.width
  const h = scene.scale.height
@@ -164,14 +161,30 @@ if(!pointer.isDown && !pointer.primaryDown){
  const px = pointer.position.x
  const py = pointer.position.y
 
- if(px < edge)       camera.scrollX -= speed
- if(px > w - edge)   camera.scrollX += speed
- if(py < edge)       camera.scrollY -= speed
- if(py > h - edge)   camera.scrollY += speed
+ let dx = 0
+ let dy = 0
 
- 
+ if(px < edge){
+  dx = -(edge - px) / edge
+ }
+
+ if(px > w - edge){
+  dx = (px - (w - edge)) / edge
+ }
+
+ if(py < edge){
+  dy = -(edge - py) / edge
+ }
+
+ if(py > h - edge){
+  dy = (py - (h - edge)) / edge
+ }
+
+ camera.scrollX += dx * maxSpeed
+ camera.scrollY += dy * maxSpeed
 
 }
+
 
 
 return{update}

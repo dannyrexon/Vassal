@@ -151,6 +151,7 @@ if(!tile.explored){
 
 }
 
+
 return{render}
 
 }
@@ -182,3 +183,6 @@ function getRiverFrame(n,e,s,w){
  return -1
 
 }
+
+
+

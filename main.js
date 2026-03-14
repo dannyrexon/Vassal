@@ -33,6 +33,7 @@ let mouseInsideMap=false
 
 let sceneRef
 let selectionGraphic=null
+let selectionBlinkTimer
 
 let worldgen
 let renderer
@@ -185,7 +186,8 @@ function create(){
   MAP_WIDTH,
   MAP_HEIGHT,
   onUnitMoved,
-  checkEndTurn
+  checkEndTurn,
+  activateUnit
  )
 
  generateWorld()
@@ -215,6 +217,9 @@ function create(){
 
  updateTurnInfo()
 
+
+ // DEBUG BUTTONS -----------------------------------------
+
  document.getElementById("toggleVeg").onclick=()=>{
   showVegetation=!showVegetation
   const btn=document.getElementById("toggleVeg")
@@ -235,12 +240,36 @@ function create(){
 
    const unit=population.getUnitAt(x,y)
 
-   if(unit) activateUnit(unit)
-   else population.setActive(null)
+   if(unit)
+   {
+      activateUnit(unit)
+      if(selectionGraphic) selectionGraphic.destroy()
+   }
+   else 
+   {
+     population.setActive(null)
+     drawSelection()
+   }
 
    updateInfoPanel(x,y)
+   
   }
  })
+
+ document.getElementById("exploreAll").onclick = () => {
+
+ for(let y=0; y<MAP_HEIGHT; y++){
+  for(let x=0; x<MAP_WIDTH; x++){
+   GameState.map[y][x].explored = true
+  }
+ }
+
+ renderer.render(GameState.map)
+
+}
+
+// END OF DEBUG BUTTONS -----------------------------------------
+
 }
 
 function update(){
@@ -310,18 +339,20 @@ function updateInfoPanel(x,y){
  const terrainName=TERRAIN_NAMES?.[tile.terrain]??"Undefined"
 
  let info=
-  "Turn: "+currentTurn+
-  "<br>Map: ["+x+", "+y+"]"+
+  "Location: ["+x+", "+y+"]"+
   "<br>Terrain: "+terrainName
+  "<br>Vegetation: "
+  let vegName = "None"
 
  if(tile.vegetation>0){
-
-  const vegName=TERRAIN_NAMES?.[tile.vegetation]??"Undefined"
-
-  info+=" ("+vegName+")"
+  vegName=TERRAIN_NAMES?.[tile.vegetation]??"Undefined"
  }
+ info+="<br>Vegetation: "+vegName
 
- if(tile.river) info+="<br>River"
+ let riv = "No"
+
+ if(tile.river) riv = "Yes"
+ info+="<br>River: "+riv
 
  icon.style.display="none"
 
@@ -341,7 +372,7 @@ function updateInfoPanel(x,y){
   }
 
  }
-
+ 
  textDiv.innerHTML=info
 }
 
@@ -368,13 +399,18 @@ function updateTurnInfo(){
 
 function drawSelection(){
 
+ if(selectionBlinkTimer){
+  selectionBlinkTimer.remove()
+  selectionBlinkTimer = null
+ }
+
  if(selectionGraphic) selectionGraphic.destroy()
 
  if(!selectedTile) return
 
- selectionGraphic=sceneRef.add.graphics()
+ selectionGraphic = sceneRef.add.graphics()
 
- selectionGraphic.lineStyle(2,0xffff00,1)
+ selectionGraphic.lineStyle(4,0xffffff,1)
 
  selectionGraphic.strokeRect(
   selectedTile.x*TILE_SIZE,
@@ -382,7 +418,19 @@ function drawSelection(){
   TILE_SIZE,
   TILE_SIZE
  )
+
+ selectionBlinkTimer = sceneRef.time.addEvent({
+  delay:500,
+  loop:true,
+  callback:()=>{
+   if(selectionGraphic){
+    selectionGraphic.visible = !selectionGraphic.visible
+   }
+  }
+ })
 }
+
+
 
 }
 

@@ -20,7 +20,7 @@ canvas{
 }
 
 #game-container{
-  position:absolute;
+  position:relative;
   left:16px;
   top:16px;
   bottom:16px;
@@ -70,6 +70,41 @@ canvas{
   font-size:14px;
 }
 
+#unitActions{
+ position:absolute;
+ left:24px;
+ bottom:24px;
+
+ width:128px;
+ height:128px;
+
+ background:#808080;
+ box-shadow:4px 4px 0px #000;
+ z-index:1000;
+
+ image-rendering:pixelated;
+
+ display:grid;
+ grid-template-columns:repeat(3, 32px);
+ grid-template-rows:repeat(3, 32px);
+ gap:4px;
+
+ justify-content:center;
+ align-content:center;
+}
+
+#unitActions button{
+  width:32px;
+  height:32px;
+  background:#404040;
+  color:white;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  margin:0;
+  padding:0;
+}
+
 </style>
 </head>
 
@@ -77,15 +112,30 @@ canvas{
 
 <div id="game-container"></div>
 
+<!----
+<div id="unitActions">
+  <button>&nwarr;</button>
+  <button>&uarr;</button>
+  <button>&nearr;</button>
+  <button>&larr;</button>
+  <button>&orarr;</button>
+  <button>&rarr;</button>
+  <button>&swarr;</button>
+  <button>&darr;</button>
+  <button>&searr;</button>
+</div>
+-->
+
 <div id="sidepanel">
 <canvas id="minimap"></canvas>
 
 <div id="tileinfo">
-    <img id="unitIcon" style="display:none; width:64px; height:64px;float:left; margin-right:8px;">
+    <img id="unitIcon" style="cursor:pointer; display:none; width:64px; height:64px;float:left; margin-right:8px;">
     <div id="tiletext"></div>
 </div>
 
 <div id="debugButtons">
+  <button class="debug"id="exploreAll">Explore All</button>
   <button class="debug" id="toggleVeg">Hide Vegetation</button>
   <button class="debug" id="regen">Regenerate World</button>
 </div>
