@@ -62,8 +62,9 @@ function preload(){
  this.load.spritesheet("terrain","graphics/terrain.png?v="+v,{frameWidth:64,frameHeight:64})
  this.load.spritesheet("transitions","graphics/transitions.png?v="+v,{frameWidth:64,frameHeight:64})
  this.load.spritesheet("rivers","graphics/rivers.png?v="+v,{frameWidth:64,frameHeight:64})
+ this.load.spritesheet("roads","graphics/roads.png?v="+v,{frameWidth:64,frameHeight:64})
  this.load.spritesheet("population","graphics/population.png?v="+v,{frameWidth:64,frameHeight:64})
- this.load.image("hidden","graphics/hidden.png?v="+v)
+  this.load.image("hidden","graphics/hidden.png?v="+v)
 }
 
 function startTurn(){
@@ -113,11 +114,13 @@ function checkEndTurn(){
 
 function onUnitMoved(unit){
 
+ 
  selectedTile={x:unit.x,y:unit.y}
  explore(unit)
 
  renderer.render(GameState.map)
  updateInfoPanel(unit.x,unit.y)
+
  
 }
 
@@ -126,6 +129,7 @@ function activateUnit(unit){
  if(!unit) return
 
  population.setActive(unit)
+ unit.setOrder(null)
 
  selectedTile={x:unit.x,y:unit.y}
 
@@ -149,6 +153,7 @@ function create(){
  let terrainLayer=this.add.layer()
  let vegetationLayer=this.add.layer()
  let riverLayer=this.add.layer()
+ let roadLayer=this.add.layer()
  let unitLayer=this.add.layer()
  let uiLayer=this.add.layer()
  let fogLayer = this.add.layer()
@@ -168,6 +173,7 @@ function create(){
   terrainLayer,
   vegetationLayer,
   riverLayer,
+  roadLayer,
   fogLayer
  )
 
@@ -178,17 +184,18 @@ function create(){
     onUnitCycle,checkEndTurn,onUnitMoved)
 
  inputSystem=createInput(
-  sceneRef,
-  pointer,
-  SETTINGS,
-  camera,
-  population,
-  MAP_WIDTH,
-  MAP_HEIGHT,
-  onUnitMoved,
-  checkEndTurn,
-  activateUnit
- )
+ sceneRef,
+ pointer,
+ SETTINGS,
+ camera,
+ population,
+ MAP_WIDTH,
+ MAP_HEIGHT,
+ onUnitMoved,
+ checkEndTurn,
+ activateUnit,
+ renderer
+)
 
  generateWorld()
 
@@ -199,10 +206,10 @@ function create(){
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
- population.createUnit(6,6,0,3,1)  // x,y,type,moves,vision
- population.createUnit(7,8,1,3,1)
- population.createUnit(12,10,2,3,1)
- population.createUnit(15,8,3,3,1)
+ population.createUnit(6,6, SOCIAL_CLASS.PEASANT, 0,3,1)  // x,y,type,social class, moves,vision
+ population.createUnit(7,8, SOCIAL_CLASS.BURGHER, 1,3,1)
+ population.createUnit(12,10, SOCIAL_CLASS.CLERGY, 2,3,1)
+ population.createUnit(15,8, SOCIAL_CLASS.NOBLE,3,3,1)
 
  for(const unit of population.units){
  explore(unit)

@@ -1,36 +1,95 @@
+const SOCIAL_CLASS = {
+ PEASANT: 0,
+ BURGHER: 1,
+ CLERGY: 2,
+ NOBLE: 3
+}
+
+const SOCIAL_CLASS_NAME = [
+ "Peasantry",
+ "Bourgeoisie",
+ "Clergy",
+ "Nobility"
+]
+
 function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle, checkEndTurn, onUnitMoved)
 {
 
  let units = []
  let activeUnit = null
 
- function createUnit(x,y,type,move,vision){
+ function createUnit(x,y,type,socialClass,move,vision){
 
-  const sprite = scene.add.sprite(
-    x*TILE_SIZE + TILE_SIZE/2,
-    y*TILE_SIZE + TILE_SIZE/2 - 16,
-    "population",
-    type
-)
+ const container = scene.add.container(
+  x*TILE_SIZE + TILE_SIZE/2,
+  y*TILE_SIZE + TILE_SIZE/2
+ )
 
-  unitLayer.add(sprite)
+ const sprite = scene.add.sprite(
+  0,
+  -16,
+  "population",
+  type
+ )
 
-  const unit = {
-   x,
-   y,
-   type,
-   moveTotal: move,
-   moveCurrent: move,
-   active: false,
-   sprite,
-   isMoving: false,
-   vision
-  }
+ const statusBox = scene.add.rectangle(
+  -TILE_SIZE/2 + 6,
+  TILE_SIZE/2 - 43,
+  18,
+  24,
+  0xffff00
+ )
 
-  units.push(unit)
+ statusBox.setOrigin(0,0)
+ statusBox.setStrokeStyle(2,0x000000)
 
-  return unit
+ const statusText = scene.add.text(
+  -TILE_SIZE/2 + 9,
+  TILE_SIZE/2 - 40,
+  "-",
+ {
+  fontFamily:"monospace",
+  weight:"bold",
+  fontSize:"16px",
+  color:"#000000",
+  stroke:"#000000",
+  strokeThickness:1
  }
+ )
+
+ container.add(statusBox)
+ container.add(statusText)
+ container.add(sprite)
+ 
+ unitLayer.add(container)
+
+ const unit = {
+  x,
+  y,
+  type,
+  socialClass,
+  moveTotal: move,
+  moveCurrent: move,
+  active: false,
+  container,
+  sprite,
+  statusBox,
+  statusText,
+  isMoving: false,
+  vision,
+
+  order: null,
+
+ setOrder(order){
+  this.order = order
+  this.statusText.setText(order ? order : "-")
+ }
+ }
+
+ units.push(unit)
+
+ return unit
+}
 
  
 
@@ -39,13 +98,13 @@ function getNextUnitAfter(unit){
  const index = units.indexOf(unit)
 
  for(let i=index+1;i<units.length;i++){
-  if(units[i].moveCurrent > 0){
+  if(units[i].moveCurrent > 0 && units[i].order !== "F"){
    return units[i]
   }
  }
 
  for(let i=0;i<index;i++){
-  if(units[i].moveCurrent > 0){
+  if(units[i].moveCurrent > 0 && units[i].order !== "F"){
    return units[i]
   }
  }
@@ -74,15 +133,15 @@ function getNextUnitAfter(unit){
  unit.isMoving = true
 
  // ensure visible during movement
- unit.sprite.visible = true
+ unit.container.visible = true
  const wasActive = unit.active
  unit.active = false
 
  scene.tweens.add({
 
-  targets: unit.sprite,
+  targets: unit.container,
   x: x*TILE_SIZE + TILE_SIZE/2,
-  y: y*TILE_SIZE + TILE_SIZE/2 - 16,
+  y: y*TILE_SIZE + TILE_SIZE/2,
   duration: 200,
   ease: "Linear",
 
@@ -92,6 +151,11 @@ function getNextUnitAfter(unit){
 
    unit.x = targetX
    unit.y = targetY
+
+   // if unit still has moves left, clear order
+   if(unit.moveCurrent > 0){
+   unit.setOrder(null)
+   }
    
    if(onUnitMoved){
     onUnitMoved(unit)
@@ -134,12 +198,14 @@ function getNextUnitAfter(unit){
  // deactivate previous
  if(activeUnit){
   activeUnit.active = false
-  activeUnit.sprite.visible = true
+  activeUnit.container.visible = true
  }
 
  activeUnit = unit
 
  if(activeUnit){
+  // reset order when unit becomes active
+  activeUnit.setOrder(null)
   activeUnit.active = true
  }
 
@@ -152,7 +218,7 @@ function getNextUnitAfter(unit){
  function getNextUnitWithMoves(){
 
  for(const u of units){
-  if(u.moveCurrent > 0){
+  if(u.moveCurrent > 0 && u.order !== "F"){
    return u
   }
  }
@@ -174,12 +240,32 @@ function update(time){
  if(activeUnit){
 
  if(activeUnit.isMoving){
-  activeUnit.sprite.visible = true
+  activeUnit.container.visible = true
  } else {
-  activeUnit.sprite.visible = blinkState
+  activeUnit.container.visible = blinkState
  }
 
 }
+
+}
+
+function updateOrderDisplay(unit){
+
+ let letter = "-"
+
+ if(unit.order){
+  letter = unit.order
+ }
+
+ unit.statusText.setText(letter)
+
+}
+
+function setUnitOrder(unit,order){
+
+ unit.order = order
+
+ updateOrderDisplay(unit)
 
 }
 
@@ -192,6 +278,7 @@ function update(time){
  getNextUnitWithMoves,
  getNextUnitAfter,
  update,
+ setUnitOrder,
  units
 }
 

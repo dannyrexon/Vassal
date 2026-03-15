@@ -1,11 +1,12 @@
 function createRenderer(scene,TILE_SIZE,MAP_WIDTH,MAP_HEIGHT,terrainLayer,
-    vegetationLayer,riverLayer,fogLayer){
+    vegetationLayer,riverLayer,roadLayer,fogLayer){
 
 function render(map){
 
  terrainLayer.removeAll(true)
  vegetationLayer.removeAll(true)
  riverLayer.removeAll(true)
+ roadLayer.removeAll(true)
  fogLayer.removeAll(true)
 
  for(let y=0;y<MAP_HEIGHT;y++)
@@ -115,6 +116,51 @@ function render(map){
   }
 
  }
+
+ // Roads
+
+
+if(tile.road){
+
+ const n  = map[y-1]?.[x]?.road
+ const ne = map[y-1]?.[x+1]?.road
+ const e  = map[y]?.[x+1]?.road
+ const se = map[y+1]?.[x+1]?.road
+ const s  = map[y+1]?.[x]?.road
+ const sw = map[y+1]?.[x-1]?.road
+ const w  = map[y]?.[x-1]?.road
+ const nw = map[y-1]?.[x-1]?.road
+
+ let hasNeighbour = false
+
+ function drawRoad(frame,dx,dy){
+
+  const img = roadLayer.add(scene.add.image(
+   x*TILE_SIZE + dx,
+   y*TILE_SIZE + dy,
+   "roads",
+   frame
+  ))
+
+  img.setOrigin(0,0)
+
+ }
+
+ if(w){ drawRoad(0,-4,0); hasNeighbour=true }
+ if(nw){ drawRoad(1,-4,-4); hasNeighbour=true }
+ if(n){ drawRoad(2,0,-4); hasNeighbour=true }
+ if(ne){ drawRoad(3,4,-4); hasNeighbour=true }
+ if(e){ drawRoad(4,4,0); hasNeighbour=true }
+ if(se){ drawRoad(5,4,4); hasNeighbour=true }
+ if(s){ drawRoad(6,0,4); hasNeighbour=true }
+ if(sw){ drawRoad(7,-4,4); hasNeighbour=true }
+
+ // isolated road tile
+ if(!hasNeighbour){
+  drawRoad(8,0,0)
+ }
+
+}
 
  // Vegetation
 

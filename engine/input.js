@@ -1,5 +1,5 @@
 function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,
-    onUnitMoved,checkEndTurn,activateUnit){
+ onUnitMoved,checkEndTurn,activateUnit,renderer){
 
 function getMoveCost(unit,nx,ny){
 
@@ -21,6 +21,10 @@ function getMoveCost(unit,nx,ny){
   cost = 1
  }
 
+if(fromTile.road && toTile.road){
+ cost = 1
+}
+
  return cost
 }
 
@@ -31,15 +35,15 @@ function getNextUnitAfter(unit){
  const index = units.indexOf(unit)
 
  for(let i=index+1;i<units.length;i++){
-  if(units[i].moveCurrent > 0){
-   return units[i]
-  }
+  if(units[i].moveCurrent > 0 && units[i].order !== "F"){
+ return units[i]
+}
  }
 
  for(let i=0;i<index;i++){
-  if(units[i].moveCurrent > 0){
-   return units[i]
-  }
+  if(units[i].moveCurrent > 0 && units[i].order !== "F"){
+ return units[i]
+}
  }
 
  return null
@@ -55,6 +59,7 @@ scene.input.keyboard.on("keydown-S", ()=>{
  if(unit.isMoving) return
 
  unit.moveCurrent = 0
+ unit.setOrder("S")
 
  const next = getNextUnitAfter(unit)
 
@@ -85,15 +90,87 @@ scene.input.keyboard.on("keydown-W", ()=>{
  if(!unit) return
  if(unit.isMoving) return
 
+ unit.setOrder("W")
+
  const next = getNextUnitAfter(unit)
 
  if(!next) return
 
  population.setActive(next)
 
+ 
+
  setTimeout(()=>{
   activateUnit(next)
  },300)
+
+})
+
+// BUILD ROAD (R)
+// BUILD ROAD (R)
+scene.input.keyboard.on("keydown-R", ()=>{
+
+ const unit = population.getActiveUnit()
+
+ if(!unit) return
+ if(unit.isMoving) return
+
+ const tile = GameState.map[unit.y][unit.x]
+
+ tile.road = true
+
+ unit.moveCurrent = 0
+ unit.setOrder("R")
+
+ renderer.render(GameState.map)
+
+ const next = getNextUnitAfter(unit)
+
+ if(next){
+
+  population.setActive(next)
+
+  setTimeout(()=>{
+   activateUnit(next)
+  },300)
+
+ } else {
+
+  population.setActive(null)
+  checkEndTurn()
+
+ }
+
+})
+
+// FORTIFY COMMAND (F)
+scene.input.keyboard.on("keydown-F", ()=>{
+
+ const unit = population.getActiveUnit()
+
+ if(!unit) return
+ if(unit.isMoving) return
+
+ unit.moveCurrent = 0
+ unit.setOrder("F")
+
+ const next = getNextUnitAfter(unit)
+
+ if(next){
+
+  population.setActive(next)
+
+  setTimeout(()=>{
+   activateUnit(next)
+  },300)
+
+ }
+ else{
+
+  population.setActive(null)
+  checkEndTurn()
+
+ }
 
 })
 
@@ -109,7 +186,7 @@ scene.input.keyboard.on("keydown",(e)=>{
 
  let dx = 0
  let dy = 0
-
+ 
  switch(e.code){
 
   case "Numpad8": dy = -1; break
@@ -139,9 +216,10 @@ scene.input.keyboard.on("keydown",(e)=>{
  population.moveUnit(unit,nx,ny)
 
  unit.moveCurrent -= cost
+ unit.setOrder("M")
 
  if(onUnitMoved){
-  onUnitMoved(unit)
+  onUnitMoved(unit)  
  }
 
  checkEndTurn()
