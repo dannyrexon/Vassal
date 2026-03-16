@@ -74,13 +74,21 @@ function startTurn(){
  currentTurn++
 
  for(const u of population.units){
-  u.moveCurrent=u.moveTotal
+  u.moveCurrent = u.moveTotal
+  // clear temporary orders at start of turn
+  if(u.order === "M" || u.order === "W" || u.order === "S"){
+  u.setOrder(null)
  }
 
- const firstUnit=population.units[0]
+ }
+
+ // find first unit that should act
+ const firstUnit = population.getNextUnitWithMoves()
 
  if(firstUnit){
   activateUnit(firstUnit)
+ } else {
+  population.setActive(null)
  }
 
  updateTurnInfo()
@@ -88,6 +96,7 @@ function startTurn(){
  setTimeout(()=>{
   turnState="PLAYER"
  },200)
+
 }
 
 function endTurn(){
@@ -103,13 +112,18 @@ function endTurn(){
 
 function checkEndTurn(){
 
- if(turnState!=="PLAYER") return
+ if(turnState !== "PLAYER") return
 
  for(const u of population.units){
-  if(u.moveCurrent>0) return
+
+  if(u.moveCurrent > 0 && (u.order === null || u.order === "M" || u.order === "W")){
+   return
+  }
+
  }
 
  endTurn()
+
 }
 
 function onUnitMoved(unit){
@@ -331,7 +345,6 @@ function explore(unit){
 
 
 function onUnitCycle(unit){
-
  activateUnit(unit)
 }
 
@@ -398,6 +411,9 @@ function formatMoves(moves){
 }
 
 function updateTurnInfo(){
+
+ const turnEl = document.getElementById("turnNumber")
+ if(turnEl) turnEl.innerText = currentTurn
 
  if(selectedTile){
   updateInfoPanel(selectedTile.x,selectedTile.y)

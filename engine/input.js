@@ -106,8 +106,7 @@ scene.input.keyboard.on("keydown-W", ()=>{
 
 })
 
-// BUILD ROAD (R)
-// BUILD ROAD (R)
+// BUILD ROAD (S)
 scene.input.keyboard.on("keydown-R", ()=>{
 
  const unit = population.getActiveUnit()

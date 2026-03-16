@@ -105,6 +105,20 @@ canvas{
   padding:0;
 }
 
+#turnBox{
+ position:absolute;
+ top:24px;
+ left:24px;
+ background:#404040;
+ color:white;
+ padding:6px 12px;
+ font-family:monospace;
+ font-size:16px;
+ border:2px solid black;
+ box-shadow:2px 2px 0px black;
+
+}
+
 </style>
 </head>
 
@@ -125,6 +139,10 @@ canvas{
   <button>&searr;</button>
 </div>
 -->
+
+<div id="turnBox">
+ Turn: <span id="turnNumber">1</span>
+</div>
 
 <div id="sidepanel">
 <canvas id="minimap"></canvas>
