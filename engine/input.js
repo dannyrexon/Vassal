@@ -8,6 +8,16 @@ function getMoveCost(unit,nx,ny){
 
  const terrainCost = settings.movement_cost?.[toTile.terrain] ?? 1
 
+ if (fromTile.river || fromTile.road){
+  // SPECIAL RULE: always allow entering open terrain (plain/grass/wetland)
+  const isOpenTerrain =
+  (toTile.terrain === 5 || toTile.terrain === 6 || toTile.terrain === 7)
+  
+  if(unit.moveCurrent < 3 && isOpenTerrain && !toTile.river && !toTile.road){
+    return 0
+  }
+ }
+ 
  if(terrainCost >= 99) return 99
 
  let cost = terrainCost
@@ -18,12 +28,18 @@ function getMoveCost(unit,nx,ny){
  const isCardinalMove = (dx === 0 || dy === 0)
 
  if(fromTile.river && toTile.river && isCardinalMove){
-  cost = 1
+  return 1
  }
 
 if(fromTile.road && toTile.road){
- cost = 1
+ return 1
 }
+
+// Walking to a hill always depletes all remaining movement unless there is a road there
+ if(toTile.terrain === 8){
+    cost = unit.moveCurrent
+ }
+
 
  return cost
 }
@@ -215,6 +231,7 @@ scene.input.keyboard.on("keydown",(e)=>{
  population.moveUnit(unit,nx,ny)
 
  unit.moveCurrent -= cost
+ if(cost == 0) unit.moveCurrent = 0
  unit.setOrder("M")
 
  if(onUnitMoved){

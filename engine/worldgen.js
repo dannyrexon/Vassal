@@ -15,7 +15,8 @@ function generate(settings){
     resource:0,
     river:false,
     road:false,
-    explored: false
+    explored: false,
+    visible:false
    }
   }
 

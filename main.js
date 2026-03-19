@@ -73,6 +73,9 @@ function startTurn(){
 
  currentTurn++
 
+ updateVisibility()
+ renderer.render(GameState.map)
+
  for(const u of population.units){
   u.moveCurrent = u.moveTotal
   // clear temporary orders at start of turn
@@ -131,7 +134,7 @@ function onUnitMoved(unit){
  
  selectedTile={x:unit.x,y:unit.y}
  explore(unit)
-
+ 
  renderer.render(GameState.map)
  updateInfoPanel(unit.x,unit.y)
 
@@ -158,6 +161,50 @@ function activateUnit(unit){
   duration:250,
   ease:"Sine.easeOut"
  })
+}
+
+function updateVisibility(){
+
+ // reset
+ for(let y=0;y<MAP_HEIGHT;y++)
+ for(let x=0;x<MAP_WIDTH;x++){
+   const tile = GameState.map[y][x]
+   tile.visible = false
+  
+ // roads are always visible
+   if(tile.road){
+   tile.visible = true
+   tile.explored = true
+  }
+ }
+
+ // reveal from all units
+ for(const unit of population.units){
+
+  let radius = unit.vision
+
+  const tile = GameState.map[unit.y][unit.x]
+
+  if(tile.terrain === 8){
+   radius += 1
+  }
+
+  for(let dy=-radius; dy<=radius; dy++)
+  for(let dx=-radius; dx<=radius; dx++){
+
+   const x = unit.x + dx
+   const y = unit.y + dy
+
+   const t = GameState.map[y]?.[x]
+   if(!t) continue
+
+   t.visible = true
+   t.explored = true
+
+  }
+
+ }
+
 }
 
 function create(){
@@ -223,7 +270,7 @@ function create(){
  population.createUnit(6,6, SOCIAL_CLASS.PEASANT, 0,3,1)  // x,y,type,social class, moves,vision
  population.createUnit(7,8, SOCIAL_CLASS.BURGHER, 1,3,1)
  population.createUnit(12,10, SOCIAL_CLASS.CLERGY, 2,3,1)
- population.createUnit(15,8, SOCIAL_CLASS.NOBLE,3,3,1)
+ population.createUnit(15,8, SOCIAL_CLASS.NOBLE,3,6,1)
 
  for(const unit of population.units){
  explore(unit)
@@ -320,11 +367,11 @@ function generateWorld(){
 
 function explore(unit){
 
- const tile = GameState.map[unit.y][unit.x]
-
  let radius = unit.vision
 
- // hill bonus
+ const tile = GameState.map[unit.y][unit.x]
+
+ // Hill sight bonus
  if(tile.terrain === 8){
   radius += 1
  }
@@ -335,9 +382,11 @@ function explore(unit){
   const x = unit.x + dx
   const y = unit.y + dy
 
-  if(!GameState.map[y]?.[x]) continue
+  const t = GameState.map[y]?.[x]
+  if(!t) continue
 
-  GameState.map[y][x].explored = true
+  t.explored = true
+  t.visible = true
 
  }
 

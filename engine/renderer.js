@@ -178,8 +178,9 @@ if(tile.road){
  }
 
 
- // Unexplored Terrain
+// Unexplored terrain & fog of war
 
+// Unexplored (full fog)
 if(!tile.explored){
 
  const fog = scene.add.image(
@@ -189,6 +190,24 @@ if(!tile.explored){
  )
 
  fog.setOrigin(0,0)
+ fogLayer.add(fog)
+
+}
+
+// Explored but not visible (dim fog)
+else if(!tile.visible){
+
+ const fog = scene.add.rectangle(
+  x*TILE_SIZE,
+  y*TILE_SIZE,
+  TILE_SIZE,
+  TILE_SIZE,
+  0x000000
+ )
+
+ fog.setOrigin(0,0)
+ fog.setAlpha(0.25)
+
  fogLayer.add(fog)
 
 }
