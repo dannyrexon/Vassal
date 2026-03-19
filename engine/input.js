@@ -238,8 +238,6 @@ scene.input.keyboard.on("keydown",(e)=>{
   onUnitMoved(unit)  
  }
 
- checkEndTurn()
-
 })
 
 

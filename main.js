@@ -24,7 +24,7 @@ const MAP_WIDTH=SETTINGS.map_width
 const MAP_HEIGHT=SETTINGS.map_height
 
 let currentTurn=1
-let turnState="PLAYER"   // PLAYER | ENDING | STARTING
+let turnState="PLAYER"   // PLAYER | ENDING | AI | STARTING
 
 let camera
 let pointer
@@ -77,10 +77,15 @@ function startTurn(){
  renderer.render(GameState.map)
 
  for(const u of population.units){
-  u.moveCurrent = u.moveTotal
+  u.moveCurrent = u.moveTotal // replenish moves
   // clear temporary orders at start of turn
   if(u.order === "M" || u.order === "W" || u.order === "S"){
   u.setOrder(null)
+ }
+
+ // AI units replenish moves
+ for(const u of aiPopulation.units){
+  u.moveCurrent = u.moveTotal
  }
 
  }
@@ -104,14 +109,19 @@ function startTurn(){
 
 function endTurn(){
 
- if(turnState!=="PLAYER") return
+ if(turnState !== "PLAYER") return
 
- turnState="ENDING"
+ turnState = "AI"
 
+ // wait for last movement to visually finish
  setTimeout(()=>{
-  startTurn()
+  turnState = "AI"
+  runAITurn(aiPopulation, startTurn)
  },500)
+
 }
+
+
 
 function checkEndTurn(){
 
@@ -130,12 +140,10 @@ function checkEndTurn(){
 }
 
 function onUnitMoved(unit){
-
  
  selectedTile={x:unit.x,y:unit.y}
  explore(unit)
- 
- renderer.render(GameState.map)
+  renderer.render(GameState.map)
  updateInfoPanel(unit.x,unit.y)
 
  
@@ -180,7 +188,7 @@ function updateVisibility(){
 
  // reveal from all units
  for(const unit of population.units){
-
+ 
   let radius = unit.vision
 
   const tile = GameState.map[unit.y][unit.x]
@@ -242,7 +250,9 @@ function create(){
  cameraSystem=createCamera(camera,MAP_WIDTH,MAP_HEIGHT,TILE_SIZE)
 
  population=createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,
-    onUnitCycle,checkEndTurn,onUnitMoved)
+    onUnitCycle,checkEndTurn,onUnitMoved, false)
+ aiPopulation = createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,
+ null,null,null, true)
 
  inputSystem=createInput(
  sceneRef,
@@ -267,10 +277,14 @@ function create(){
  canvas.addEventListener("mouseenter",()=>mouseInsideMap=true)
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
- population.createUnit(6,6, SOCIAL_CLASS.PEASANT, 0,3,1)  // x,y,type,social class, moves,vision
+ // Starting population
+ population.createUnit(6,6, SOCIAL_CLASS.PEASANT, 0,3,1)  // x,y,type,social class, moves, vision
  population.createUnit(7,8, SOCIAL_CLASS.BURGHER, 1,3,1)
  population.createUnit(12,10, SOCIAL_CLASS.CLERGY, 2,3,1)
  population.createUnit(15,8, SOCIAL_CLASS.NOBLE,3,6,1)
+
+ // AI units
+ aiPopulation.createUnit(8,6, SOCIAL_CLASS.PEASANT, 0,3,1)
 
  for(const unit of population.units){
  explore(unit)
@@ -348,21 +362,18 @@ function update(){
 
  minimap.draw(GameState.map)
  population.update(this.time.now)
+ aiPopulation.update(this.time.now, true)
 }
 
 function generateWorld(){
-
  GameState.map=worldgen.generate(SETTINGS)
-
  minimap.setup()
- minimap.draw(GameState.map)
-
  for(const unit of population.units){
- explore(unit)
+    explore(unit)
  }
-
+ minimap.draw(GameState.map)
  renderer.render(GameState.map)
-
+ 
 }
 
 function explore(unit){

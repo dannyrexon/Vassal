@@ -12,13 +12,14 @@ const SOCIAL_CLASS_NAME = [
  "Nobility"
 ]
 
-function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle, checkEndTurn, onUnitMoved)
+function createPopulationSystem(scene, TILE_SIZE, unitLayer,
+ onUnitCycle, checkEndTurn, onUnitMoved, isAI=false)
 {
 
  let units = []
  let activeUnit = null
 
- function createUnit(x,y,type,socialClass,move,vision){
+ function createUnit(x,y,type,socialClass,move,vision,owner){
 
  const container = scene.add.container(
   x*TILE_SIZE + TILE_SIZE/2,
@@ -32,12 +33,14 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle, checkE
   type
  )
 
+ const color = isAI ? 0xff4444 : 0xffff00
+
  const statusBox = scene.add.rectangle(
   -TILE_SIZE/2 + 6,
   TILE_SIZE/2 - 43,
   18,
   24,
-  0xffff00
+  color
  )
 
  statusBox.setOrigin(0,0)
@@ -77,7 +80,6 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer, onUnitCycle, checkE
   statusText,
   isMoving: false,
   vision,
-
   order: null,
 
  setOrder(order){
@@ -97,12 +99,14 @@ function getNextUnitAfter(unit){
 
  const index = units.indexOf(unit)
 
+ // forward
  for(let i=index+1;i<units.length;i++){
   if(units[i].moveCurrent > 0 && units[i].order !== "F"){
    return units[i]
   }
  }
 
+ // wrap-around
  for(let i=0;i<index;i++){
   if(units[i].moveCurrent > 0 && units[i].order !== "F"){
    return units[i]
@@ -110,7 +114,6 @@ function getNextUnitAfter(unit){
  }
 
  return null
-
 }
 
  function getUnitAt(x,y){
@@ -152,6 +155,13 @@ function getNextUnitAfter(unit){
    unit.x = targetX
    unit.y = targetY
 
+   const tile = GameState.map[unit.y]?.[unit.x]
+
+   // Remove fractions of moves if not on road or river
+   if(tile && !tile.road && !tile.river && unit.moveCurrent < 3){
+    unit.moveCurrent = 0
+   }
+
    // if unit still has moves left, clear order
    if(unit.moveCurrent > 0){
    unit.setOrder(null)
@@ -161,26 +171,35 @@ function getNextUnitAfter(unit){
     onUnitMoved(unit)
    }
 
-   if(unit.moveCurrent <= 0){
+if(unit.moveCurrent <= 0){
 
-    const next = getNextUnitWithMoves()
+ const next = getNextUnitWithMoves()
 
-    if(next){
-     setActive(next)
-    } else {
-     setActive(null)
-    }
+ if(next){
 
-    if(onUnitCycle){
-      setTimeout(()=>{
-      onUnitCycle(next)
-      },300)
-    }   
+  setActive(next)
 
-    checkEndTurn()    
+  if(onUnitCycle){
+   setTimeout(()=>{
+    onUnitCycle(next)
+   },300)
+  }
 
-    return
-   }
+ } else {
+
+  setActive(null)
+
+  // ONLY player population should end turn
+  if(checkEndTurn){
+   setTimeout(()=>{
+    checkEndTurn()
+   },50) // small delay ensures tween fully settles
+  }
+
+ }
+
+ return
+}
 
    // otherwise restore blinking
    if(wasActive){
@@ -215,23 +234,44 @@ function getNextUnitAfter(unit){
  return activeUnit
 }
 
- function getNextUnitWithMoves(){
+function getNextUnitWithMoves(){
 
  for(const u of units){
-  if(u.moveCurrent > 0 && u.order !== "F"){
+  if(u.moveCurrent > 0 && (u.order === null || u.order === "M" || u.order === "W")){
    return u
   }
  }
 
  return null
-
- }
+}
 
  let blinkTimer = 0
  let blinkState = true
 
-function update(time){
+function update(time, isAI=false){
 
+ // ALWAYS update visibility every frame
+ for(const u of units){
+
+  if(isAI){
+
+  const tile = GameState.map[u.y]?.[u.x]
+
+  if(!tile || !tile.visible){
+   u.container.visible = false
+   continue
+  }
+
+  }
+
+  // default visible
+  if(u !== activeUnit){
+   u.container.visible = true
+  }
+
+ }
+
+ // blinking logic (only for active unit)
  if(time - blinkTimer < 500) return
 
  blinkTimer = time
@@ -239,13 +279,13 @@ function update(time){
 
  if(activeUnit){
 
- if(activeUnit.isMoving){
-  activeUnit.container.visible = true
- } else {
-  activeUnit.container.visible = blinkState
- }
+  if(activeUnit.isMoving){
+   activeUnit.container.visible = true
+  } else {
+   activeUnit.container.visible = blinkState
+  }
 
-}
+ }
 
 }
 
