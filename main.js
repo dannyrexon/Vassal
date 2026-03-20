@@ -278,13 +278,13 @@ function create(){
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
  // Starting population
- population.createUnit(6,6, SOCIAL_CLASS.PEASANT, 0,3,1)  // x,y,type,social class, moves, vision
- population.createUnit(7,8, SOCIAL_CLASS.BURGHER, 1,3,1)
- population.createUnit(12,10, SOCIAL_CLASS.CLERGY, 2,3,1)
- population.createUnit(15,8, SOCIAL_CLASS.NOBLE,3,6,1)
+ population.createUnit(6,6, TYPE.PEASANT, SOCIAL_CLASS.PEASANT, 3,1)  // x,y,type, social class, moves, vision
+ population.createUnit(7,8, TYPE.MERCHANT, SOCIAL_CLASS.BURGHER, 3,1)
+ population.createUnit(12,10, TYPE.CLERIC, SOCIAL_CLASS.CLERGY, 3,1)
+ population.createUnit(15,8, TYPE.NOBLE, SOCIAL_CLASS.NOBLE,3,1)
 
  // AI units
- aiPopulation.createUnit(8,6, SOCIAL_CLASS.PEASANT, 0,3,1)
+ aiPopulation.createUnit(8,6, TYPE.PAGAN_COMMONER, null, 3,1)
 
  for(const unit of population.units){
  explore(unit)
@@ -446,7 +446,12 @@ function updateInfoPanel(x,y){
   icon.src="graphics/population.png"
   icon.style.display="block"
   icon.style.objectFit="none"
-  icon.style.objectPosition="-"+(unit.type*64)+"px 0px"
+
+  const cols = 10
+  const col = unit.type % cols
+  const row = Math.floor(unit.type / cols)
+  icon.style.objectPosition = `-${col*64}px -${row*64}px`
+
   icon.onclick = () => {
    activateUnit(unit)
   }
