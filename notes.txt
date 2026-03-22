@@ -16,7 +16,10 @@
  Mercenary		Inf	2		2		Bought for gold *
 
  Bandit			Inf	1		2		-
- Raider			Inf	2		1		-
+ Pagan Warrior		Inf	2		2		-
+ Pagan Bowman		Arc	2 (+1 vs INF)	1
+
+
 
 
 

@@ -217,6 +217,7 @@ function updateVisibility(){
 
 function create(){
 
+ window.sceneRef=this
  sceneRef=this
 
  let terrainLayer=this.add.layer()
@@ -253,6 +254,8 @@ function create(){
     onUnitCycle,checkEndTurn,onUnitMoved, false)
  aiPopulation = createPopulationSystem(sceneRef,TILE_SIZE,unitLayer,
  null,null,null, true)
+ population.enemy = aiPopulation
+ aiPopulation.enemy = population
 
  inputSystem=createInput(
  sceneRef,
@@ -278,13 +281,13 @@ function create(){
  canvas.addEventListener("mouseleave",()=>mouseInsideMap=false)
 
  // Starting population
- population.createUnit(6,6, TYPE.PEASANT, SOCIAL_CLASS.PEASANT, 3,1)  // x,y,type, social class, moves, vision
- population.createUnit(7,8, TYPE.MERCHANT, SOCIAL_CLASS.BURGHER, 3,1)
- population.createUnit(12,10, TYPE.CLERIC, SOCIAL_CLASS.CLERGY, 3,1)
- population.createUnit(15,8, TYPE.NOBLE, SOCIAL_CLASS.NOBLE,3,1)
+ population.createUnit(6,6, TYPE.SWORDSMAN, SOCIAL_CLASS.PEASANT, 3,1, COMBAT_TYPE.INFANTRY, 2, 2)  // x,y,type, social class, moves, vision, combatType, attack, defense
+ population.createUnit(7,8, TYPE.MERCHANT, SOCIAL_CLASS.BURGHER, 3,1, COMBAT_TYPE.INFANTRY, 0, 1)
+ population.createUnit(12,10, TYPE.CLERIC, SOCIAL_CLASS.CLERGY, 3,1, COMBAT_TYPE.INFANTRY, 0, 1)
+ population.createUnit(15,8, TYPE.NOBLE, SOCIAL_CLASS.NOBLE,3,1, COMBAT_TYPE.INFANTRY, 0, 1)
 
  // AI units
- aiPopulation.createUnit(8,6, TYPE.PAGAN_COMMONER, null, 3,1)
+ aiPopulation.createUnit(7,6, TYPE.PAGAN_WARRIOR, null, 3,1, COMBAT_TYPE.INFANTRY, 2, 2)
 
  for(const unit of population.units){
  explore(unit)
@@ -517,6 +520,8 @@ function drawSelection(){
   }
  })
 }
+
+
 
 
 

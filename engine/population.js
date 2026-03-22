@@ -1,61 +1,4 @@
-window.SOCIAL_CLASS = {
- PEASANT: 0,
- BURGHER: 1,
- CLERGY: 2,
- NOBLE: 3
-}
 
-window.TYPE = {
-ARMED_PEASANT: 0,
-BANDIT: 1,
-BISHOP: 2,
-BLACKSMITH: 3,
-BREWER: 4,
-BURGHER: 5,
-CARPENTER: 6,
-CHANCELLOR: 7,
-CLAY_DIGGER: 8,
-CLERIC: 9,
-CROSSBOWMAN: 10,
-FARMER: 11,
-FISHERMAN: 12,
-FRUIT_PICKER: 13,
-HUNTER: 14,
-JESTER: 15,
-KNIGHT: 16,
-LABORER: 17,
-LEATHERWORKER: 18,
-LUMBERJACK: 19,
-MARSHALL: 20,
-MASON: 21,
-MERCENARY: 22,
-MERCHANT: 23,
-NOBLE: 24,
-ORE_DIGGER: 25,
-PAGAN_COMMONER: 26,
-PAGAN_BOWMAN: 27,
-PAGAN_WARRIOR: 28,
-PEASANT: 29,
-PEASANT_BOWMAN: 30,
-POTTER: 31,
-SAILOR: 32,
-SCRIBE: 33,
-SHEPHERD: 34,
-SOLDIER: 35,
-SPEARMAN: 36,
-SPYMASTER: 37,
-STEWARD: 38,
-STONECUTTER: 39,
-SWORDSMAN: 40,
-WEAVER: 41
-}
-
-const SOCIAL_CLASS_NAME = [
- "Peasantry",
- "Bourgeoisie",
- "Clergy",
- "Nobility"
-]
 
 function createPopulationSystem(scene, TILE_SIZE, unitLayer,
  onUnitCycle, checkEndTurn, onUnitMoved, isAI=false)
@@ -64,7 +7,7 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer,
  let units = []
  let activeUnit = null
 
- function createUnit(x,y,type,socialClass,move,vision,owner){
+ function createUnit(x,y,type,socialClass,move,vision,combatType,attack,defense){
 
  const container = scene.add.container(
   x*TILE_SIZE + TILE_SIZE/2,
@@ -126,6 +69,9 @@ function createPopulationSystem(scene, TILE_SIZE, unitLayer,
   isMoving: false,
   vision,
   order: null,
+  combatType,
+  attack,
+  defense,
 
  setOrder(order){
   this.order = order
@@ -172,6 +118,45 @@ function getNextUnitAfter(unit){
  }
 
  function moveUnit(unit,x,y){
+
+ const enemy = this.enemy?.getUnitAt(x,y)
+
+if(enemy){
+
+ if(unit.isMoving) return
+
+ unit.isMoving = true
+
+ const dx = x - unit.x
+ const dy = y - unit.y
+
+ const halfX = unit.x + dx * 0.5
+ const halfY = unit.y + dy * 0.5
+
+ scene.tweens.add({
+
+  targets: unit.container,
+  x: halfX*TILE_SIZE + TILE_SIZE/2,
+  y: halfY*TILE_SIZE + TILE_SIZE/2,
+  duration: 120,
+  ease: "Linear",
+
+  onComplete: ()=>{
+
+   unit.isMoving = false
+
+   // snap back
+   unit.container.x = unit.x*TILE_SIZE + TILE_SIZE/2
+   unit.container.y = unit.y*TILE_SIZE + TILE_SIZE/2
+
+   showCombatDialog(unit, enemy, isAI)
+
+  }
+
+ })
+
+ return
+}
 
  if(unit.isMoving) return
 
@@ -294,6 +279,15 @@ function getNextUnitWithMoves(){
  let blinkState = true
 
 function update(time, isAI=false){
+
+ if(UI_LOCK){
+
+  if(activeUnit){
+   activeUnit.container.visible = true
+  }
+
+  return
+ }
 
  // ALWAYS update visibility every frame
  for(const u of units){

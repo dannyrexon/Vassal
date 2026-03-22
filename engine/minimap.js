@@ -33,7 +33,7 @@ function setup(){
  canvas.width=width
  canvas.height=MAP_HEIGHT*scale
 
- canvas.addEventListener("mousedown",(e)=>{
+  canvas.addEventListener("mousedown",(e)=>{
   dragging=true
   handleMove(e)
   draw(currentMap)

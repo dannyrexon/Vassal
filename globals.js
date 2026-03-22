@@ -50,6 +50,12 @@ SWORDSMAN: 40,
 WEAVER: 41
 }
 
+window.COMBAT_TYPE = {
+ INFANTRY: 0,
+ ARCHER: 1,
+ CAVALRY: 2
+}
+
 window.SOCIAL_CLASS_NAME = [
  "Peasantry",
  "Bourgeoisie",

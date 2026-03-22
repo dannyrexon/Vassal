@@ -1,6 +1,7 @@
 function createInput(scene,pointer,settings,camera,population,MAP_WIDTH,MAP_HEIGHT,
  onUnitMoved,checkEndTurn,activateUnit,renderer){
 
+
 function getMoveCost(unit,nx,ny){
 
  const fromTile = GameState.map[unit.y][unit.x]
@@ -65,8 +66,10 @@ function getNextUnitAfter(unit){
  return null
 }
 
+// KEYBOARD INPUT HANDLERS
 
-// SKIP TURN (SPACE)
+
+// SKIP TURN (S)
 scene.input.keyboard.on("keydown-S", ()=>{
 
  const unit = population.getActiveUnit()
@@ -227,6 +230,8 @@ scene.input.keyboard.on("keydown",(e)=>{
 
  if(cost > unit.moveCurrent) return
  if(cost >= 99) return
+
+ const enemy = aiPopulation.getUnitAt(nx,ny)
 
  population.moveUnit(unit,nx,ny)
 
